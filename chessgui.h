@@ -13,8 +13,8 @@ class ChessGUI : public QMainWindow {
   Q_OBJECT
 
 public:
-  ChessGUI(QWidget *parent = nullptr);
-  ~ChessGUI();
+  explicit ChessGUI(QWidget *parent = nullptr);
+  ~ChessGUI() override;
 
 private:
   Ui::ChessGUI *ui;

@@ -1,19 +1,18 @@
 #ifndef __BOARDWIDGET_H
 #define __BOARDWIDGET_H
 
-#include <QBoxLayout>
-#include <QGraphicsView>
+#include "aspectratiowidget.h"
 
-class BoardWidget : public QWidget {
-public:
-  explicit BoardWidget(QWidget *parent = nullptr);
-  void resizeEvent(QResizeEvent *event) override;
-
+class BoardWidget : public AspectRatioWidget {
 private:
-  QGraphicsView *view;
-  QBoxLayout *layout;
-  float aspectWidth;
-  float aspectHeight;
+  class BoardWidgetBackend : public QWidget {
+  public:
+    explicit BoardWidgetBackend(QWidget *parent = nullptr) : QWidget(parent) {}
+    void paintEvent(QPaintEvent *event) override;
+  };
+
+public:
+  explicit BoardWidget(QWidget *parent = nullptr) : AspectRatioWidget(new BoardWidgetBackend, 1, 1, parent) {}
 };
 
 #endif

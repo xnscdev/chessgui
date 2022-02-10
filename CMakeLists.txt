@@ -19,7 +19,7 @@ set(PROJECT_SOURCES
         chessgui.cpp
         chessgui.h
         chessgui.ui
-        boardwidget.cpp boardwidget.h)
+        aspectratiowidget.cpp aspectratiowidget.h boardwidget.cpp boardwidget.h)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(chessgui
@@ -41,7 +41,7 @@ endif ()
 target_link_libraries(chessgui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 set_target_properties(chessgui PROPERTIES
-        MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
+        MACOSX_BUNDLE_GUI_IDENTIFIER com.github.xnscdev.chessgui
         MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
         MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
         )
