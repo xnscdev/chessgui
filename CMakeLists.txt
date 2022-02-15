@@ -13,13 +13,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
+include(GNUInstallDirs)
+
+add_compile_definitions(CONF_DIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}/chessgui")
+add_compile_definitions(DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/chessgui")
 
 set(PROJECT_SOURCES
         main.cpp
         chessgui.cpp
         chessgui.h
         chessgui.ui
-        aspectratiowidget.cpp aspectratiowidget.h boardwidget.cpp boardwidget.h)
+        aspectratiowidget.cpp aspectratiowidget.h boardwidget.cpp boardwidget.h piece.cpp piece.h gamevariant.cpp gamevariant.h)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(chessgui
@@ -49,3 +53,5 @@ set_target_properties(chessgui PROPERTIES
 if (QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(chessgui)
 endif ()
+
+install(TARGETS chessgui RUNTIME)

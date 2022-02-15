@@ -1,5 +1,4 @@
 #include "aspectratiowidget.h"
-
 #include <QResizeEvent>
 #include <QSpacerItem>
 
