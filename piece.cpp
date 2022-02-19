@@ -1,4 +1,6 @@
 #include "piece.h"
 
-Piece::Piece(const QString &name) : name(name) {
+#include <utility>
+
+Piece::Piece(QString name) : name(std::move(name)) {
 }

@@ -8,7 +8,7 @@ public:
   QString name;
   QPixmap icon;
 
-  explicit Piece(const QString &name);
+  explicit Piece(QString name);
 };
 
 #endif

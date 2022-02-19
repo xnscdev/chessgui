@@ -7,6 +7,6 @@ struct GameVariant {
   QSize size;
 };
 
-extern GameVariant loadedVariant;
+extern GameVariant *loadedVariant;
 
 #endif

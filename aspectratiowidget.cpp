@@ -5,6 +5,7 @@
 AspectRatioWidget::AspectRatioWidget(QWidget *widget, float aspectWidth, float aspectHeight, QWidget *parent)
     : mWidget(widget), aspectWidth(aspectWidth), aspectHeight(aspectHeight), QWidget(parent) {
   layout = new QBoxLayout(QBoxLayout::LeftToRight, this);
+  layout->setContentsMargins(0, 0, 0, 0);
   layout->addItem(new QSpacerItem(0, 0));
   layout->addWidget(widget);
   layout->addItem(new QSpacerItem(0, 0));

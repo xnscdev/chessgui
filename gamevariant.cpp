@@ -1,3 +1,5 @@
 #include "gamevariant.h"
 
-GameVariant loadedVariant{{8, 8}};
+static GameVariant normalVariant{{8, 8}};
+
+GameVariant *loadedVariant = &normalVariant;
