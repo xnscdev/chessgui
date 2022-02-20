@@ -10,7 +10,7 @@ class BoardWidget : public AspectRatioWidget {
 private:
   class BoardWidgetBackend : public QWidget {
   public:
-    explicit BoardWidgetBackend(GameVariant game, QWidget *parent = nullptr);
+    explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
 
   protected:
     void paintEvent(QPaintEvent *event) override;
@@ -20,7 +20,9 @@ private:
   private:
     constexpr static const QColor lightColor{236, 207, 169};
     constexpr static const QColor darkColor{206, 144, 89};
-    GameVariant game;
+    GameVariant &game;
+    QList<QList<GamePiece>> position;
+    bool orientation;
   };
 
 public:

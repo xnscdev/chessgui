@@ -2,7 +2,12 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-BoardWidget::BoardWidgetBackend::BoardWidgetBackend(GameVariant game, QWidget *parent) : game(game), QWidget(parent) {
+BoardWidget::BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
+  position.resize(game.size.height());
+  for (auto &row : position) {
+    row.resize(game.size.width());
+  }
+  game.setup(position);
 }
 
 void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
@@ -15,10 +20,17 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
     }
   }
 
-  QRectF target(0, 0, xStep, yStep);
-  QRectF source(0, 0, 128, 128);
-  QImage image(":/icons/white-king.png");
-  painter.drawImage(target, image, source);
+  for (int x = 0; x < game.size.width(); x++) {
+    for (int y = 0; y < game.size.height(); y++) {
+      Piece *piece = position[y][x].piece;
+      qreal tx = xStep * (orientation ? game.size.width() - x - 1 : x);
+      qreal ty = yStep * (orientation ? y : game.size.height() - y - 1);
+      if (piece) {
+        QRectF target(tx, ty, xStep, yStep);
+        painter.drawImage(target, piece->icon(position[y][x].white), Piece::iconBox);
+      }
+    }
+  }
 }
 
 void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
