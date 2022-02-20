@@ -18,11 +18,19 @@ private:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
   private:
+    constexpr static const QColor highlightColor{255, 232, 124};
     constexpr static const QColor lightColor{236, 207, 169};
     constexpr static const QColor darkColor{206, 144, 89};
     GameVariant &game;
     QList<QList<GamePiece>> position;
-    bool orientation;
+    bool orientation = false;
+    QPoint highlightedTile{-1, 0};
+    QPoint prevSelectedPiece{-1, 0};
+    QPoint selectedPiece{-1, 0};
+
+    QPoint selectedTile(QPoint pos);
+    void attemptMove(QPoint from, QPoint to);
+    GamePiece &pieceAt(QPoint tile);
   };
 
 public:
