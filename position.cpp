@@ -2,16 +2,21 @@
 
 static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
                        int dy, qsizetype width, qsizetype height) {
+  bool white = pos[from.y()][from.x()].white;
   int x = from.x() + dx;
-  int y = from.y() + dy;
-  if (x >= 0 && x < width && y >= 0 && y < height &&
-      (rule.captures == Piece::CaptureRule::CanCapture ||
-       (rule.captures == Piece::CaptureRule::MustCapture) ==
-           (pos[y][x].piece && pos[y][x].white != pos[from.y()][from.x()].white))) {
-    moves.insert({from, {x, y}});
-    return true;
+  int y = from.y() + (white ? dy : -dy);
+  if (x < 0 || x >= width || y < 0 || y >= height)
+    return false;
+  if (pos[y][x].piece) {
+    if (pos[y][x].white == white)
+      return false;
+    if (rule.captures == Piece::CaptureRule::CannotCapture)
+      return false;
   }
-  return false;
+  else if (rule.captures == Piece::CaptureRule::MustCapture)
+    return false;
+  moves.insert({from, {x, y}});
+  return true;
 }
 
 Move::operator QString() const {
