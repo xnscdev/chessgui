@@ -25,7 +25,8 @@ set(PROJECT_SOURCES
         boardwidget.cpp boardwidget.h
         piece.cpp piece.h
         gamevariant.cpp gamevariant.h
-        assets.cpp assets.h)
+        assets.cpp assets.h
+        position.cpp position.h)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(chessgui

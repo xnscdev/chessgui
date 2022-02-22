@@ -1,13 +1,10 @@
 #ifndef __GAMEVARIANT_H
 #define __GAMEVARIANT_H
 
-#include "piece.h"
+#include "position.h"
 #include <QMap>
-#include <QList>
 #include <QSize>
 #include <QSettings>
-
-typedef QList<QList<GamePiece>> GamePosition;
 
 class GameVariant {
 public:

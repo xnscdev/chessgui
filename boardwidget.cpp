@@ -17,7 +17,7 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   for (int x = 0; x < game.size.width(); x++) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
-      if (QPoint(x, y) == highlightedTile)
+      if (QPoint(x, game.size.height() - y - 1) == highlightedTile)
         color = highlightColor;
       else if ((x + y) & 1)
         color = darkColor;
@@ -83,6 +83,7 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
     tileX = game.size.width() - 1;
   if (tileY >= game.size.height())
     tileY = game.size.height() - 1;
+  tileY = game.size.height() - tileY - 1;
   if (orientation) {
     tileX = game.size.width() - tileX - 1;
     tileY = game.size.height() - tileY - 1;
@@ -91,6 +92,8 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
 }
 
 void BoardWidget::BoardWidgetBackend::attemptMove(QPoint from, QPoint to) {
+  for (auto &move : availableMoves(position, from))
+    qDebug() << move;
   GamePiece &fromPiece = pieceAt(from);
   GamePiece &toPiece = pieceAt(to);
   toPiece.piece = fromPiece.piece;
@@ -100,5 +103,5 @@ void BoardWidget::BoardWidgetBackend::attemptMove(QPoint from, QPoint to) {
 }
 
 GamePiece &BoardWidget::BoardWidgetBackend::pieceAt(QPoint tile) {
-  return position[game.size.height() - tile.y() - 1][tile.x()];
+  return position[tile.y()][tile.x()];
 }
