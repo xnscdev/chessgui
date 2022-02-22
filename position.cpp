@@ -19,6 +19,17 @@ static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule,
   return true;
 }
 
+static void addRiderMoves(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
+                          int dy, qsizetype width, qsizetype height) {
+  bool white = pos[from.y()][from.x()].white;
+  for (int i = 1; tryAddMove(pos, rule, moves, from, dx * i, dy * i, width, height); i++) {
+    int x = from.x() + dx * i;
+    int y = from.y() + (white ? dy : -dy) * i;
+    if (pos[y][x].piece && pos[y][x].white != white)
+      break;
+  }
+}
+
 Move::operator QString() const {
   QString str;
   str += static_cast<QChar>('a' + from.x());
@@ -53,15 +64,11 @@ QSet<Move> availableMoves(const GamePosition &pos, QPoint from) {
       }
       break;
     case Piece::MovementType::Rider:
-      for (int i = 1; tryAddMove(pos, rule, moves, from, rule.dx * i, rule.dy * i, width, height);)
-        i++;
+      addRiderMoves(pos, rule, moves, from, rule.dx, rule.dy, width, height);
       if (rule.omnidirectional) {
-        for (int i = 1; tryAddMove(pos, rule, moves, from, -rule.dx * i, rule.dy * i, width, height);)
-          i++;
-        for (int i = 1; tryAddMove(pos, rule, moves, from, rule.dx * i, -rule.dy * i, width, height);)
-          i++;
-        for (int i = 1; tryAddMove(pos, rule, moves, from, -rule.dx * i, -rule.dy * i, width, height);)
-          i++;
+        addRiderMoves(pos, rule, moves, from, -rule.dx, rule.dy, width, height);
+        addRiderMoves(pos, rule, moves, from, rule.dx, -rule.dy, width, height);
+        addRiderMoves(pos, rule, moves, from, -rule.dx, -rule.dy, width, height);
       }
       break;
     case Piece::MovementType::Hopper:

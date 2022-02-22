@@ -27,6 +27,7 @@ private:
     QPoint highlightedTile{-1, 0};
     QPoint prevSelectedPiece{-1, 0};
     QPoint selectedPiece{-1, 0};
+    QList<QPoint> availableTiles;
 
     QPoint selectedTile(QPoint pos);
     void attemptMove(QPoint from, QPoint to);

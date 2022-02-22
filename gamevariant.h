@@ -3,8 +3,8 @@
 
 #include "position.h"
 #include <QMap>
-#include <QSize>
 #include <QSettings>
+#include <QSize>
 
 class GameVariant {
 public:

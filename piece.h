@@ -6,17 +6,9 @@
 
 class Piece {
 public:
-  enum class MovementType {
-    Leaper,
-    Rider,
-    Hopper
-  };
+  enum class MovementType { Leaper, Rider, Hopper };
 
-  enum class CaptureRule {
-    CannotCapture,
-    CanCapture,
-    MustCapture
-  };
+  enum class CaptureRule { CannotCapture, CanCapture, MustCapture };
 
   struct MovementRule {
     MovementType type;

@@ -14,16 +14,20 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   int xStep = width() / game.size.width();
   int yStep = height() / game.size.height();
+  painter.setPen(Qt::lightGray);
   for (int x = 0; x < game.size.width(); x++) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
-      if (QPoint(x, game.size.height() - y - 1) == highlightedTile)
+      QPoint point(x, game.size.height() - y - 1);
+      if (point == highlightedTile)
         color = highlightColor;
       else if ((x + y) & 1)
         color = darkColor;
       else
         color = lightColor;
       painter.fillRect(x * xStep, y * xStep, xStep, yStep, color);
+      if (availableTiles.contains(point))
+        painter.drawEllipse(QPoint(x * xStep + xStep / 2, y * yStep + yStep / 2), xStep * 7 / 16, yStep * 7 / 16);
     }
   }
 
@@ -43,6 +47,12 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
 void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
   if (event->button() == Qt::LeftButton) {
     selectedPiece = selectedTile(event->pos());
+    if (pieceAt(selectedPiece).piece && prevSelectedPiece.x() == -1) {
+      availableTiles.clear();
+      for (auto &move : availableMoves(position, selectedPiece))
+        availableTiles.append(move.to);
+      update();
+    }
   }
 }
 
@@ -92,13 +102,12 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
 }
 
 void BoardWidget::BoardWidgetBackend::attemptMove(QPoint from, QPoint to) {
-  for (auto &move : availableMoves(position, from))
-    qDebug() << move;
   GamePiece &fromPiece = pieceAt(from);
   GamePiece &toPiece = pieceAt(to);
   toPiece.piece = fromPiece.piece;
   toPiece.white = fromPiece.white;
   fromPiece.piece = nullptr;
+  availableTiles.clear();
   update();
 }
 
