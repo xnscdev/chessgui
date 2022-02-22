@@ -22,7 +22,7 @@ private:
     constexpr static const QColor lightColor{236, 207, 169};
     constexpr static const QColor darkColor{206, 144, 89};
     GameVariant &game;
-    QList<QList<GamePiece>> position;
+    GamePosition position;
     bool orientation = false;
     QPoint highlightedTile{-1, 0};
     QPoint prevSelectedPiece{-1, 0};

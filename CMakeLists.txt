@@ -19,12 +19,13 @@ add_compile_definitions(CONF_DIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}/chessgui")
 add_compile_definitions(DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/chessgui")
 
 set(PROJECT_SOURCES
-        main.cpp chessgui.qrc
+        main.cpp
         chessgui.cpp chessgui.h chessgui.ui
         aspectratiowidget.cpp aspectratiowidget.h
         boardwidget.cpp boardwidget.h
         piece.cpp piece.h
-        gamevariant.cpp gamevariant.h)
+        gamevariant.cpp gamevariant.h
+        assets.cpp assets.h)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(chessgui

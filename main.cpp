@@ -4,7 +4,7 @@
 
 int main(int argc, char **argv) {
   QApplication a(argc, argv);
-  initDefaultVariant();
+  initGameData();
   ChessGUI w;
   w.show();
   return QApplication::exec();

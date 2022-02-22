@@ -66,8 +66,10 @@ void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       }
     }
     else {
-      highlightedTile = tile;
-      attemptMove(selectedPiece, tile);
+      if (pieceAt(selectedPiece).piece) {
+        highlightedTile = tile;
+        attemptMove(selectedPiece, tile);
+      }
     }
   }
 }
