@@ -1,8 +1,8 @@
 #include "position.h"
 #include <QHashIterator>
 
-static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves, QPoint from,
-                       int dx, int dy, qsizetype width, qsizetype height, QPoint capture = QPoint{-1, 0},
+static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves,
+                       QPoint from, int dx, int dy, qsizetype width, qsizetype height, QPoint capture = QPoint{-1, 0},
                        QPoint ep = QPoint{-1, 0}, QPoint castle = QPoint{-1, 0}) {
   bool white = pos[from.y()][from.x()].white;
   int x = from.x() + dx;
@@ -81,8 +81,8 @@ static void addEnPassant(const GamePosition &pos, const Piece::MovementRule &rul
   tryAddMove(pos, rule, moves, from, dx, dy, width, height, {x, from.y()});
 }
 
-static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves,
-                      QPoint from, int dx, qsizetype width, qsizetype height) {
+static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves, QPoint from,
+                      int dx, qsizetype width, qsizetype height) {
   bool white = pos[from.y()][from.x()].white;
   if (pos[from.y()][from.x()].moved)
     return;

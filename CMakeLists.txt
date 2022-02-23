@@ -21,6 +21,7 @@ add_compile_definitions(DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/chessgui")
 set(PROJECT_SOURCES
         main.cpp
         chessgui.cpp chessgui.h chessgui.ui
+        promotiondialog.cpp promotiondialog.h promotiondialog.ui
         aspectratiowidget.cpp aspectratiowidget.h
         boardwidget.cpp boardwidget.h
         piece.cpp piece.h

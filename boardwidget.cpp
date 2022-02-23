@@ -1,4 +1,5 @@
 #include "boardwidget.h"
+#include "promotiondialog.h"
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -159,5 +160,7 @@ bool BoardWidget::BoardWidgetBackend::movablePieceAt(QPoint tile) {
 }
 
 void BoardWidget::BoardWidgetBackend::promotePiece(GamePiece &piece) {
-  piece.piece = game.pieces["queen"]; // TODO: Ask user for promotion piece
+  PromotionDialog dialog;
+  dialog.exec();
+  piece.piece = game.pieces["queen"];
 }
