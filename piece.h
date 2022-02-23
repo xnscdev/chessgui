@@ -23,6 +23,7 @@ public:
   static QRectF iconBox;
   QString name;
   QList<MovementRule> moveRules;
+  bool royal;
 
   explicit Piece(QString name);
   [[nodiscard]] const QImage &icon(bool white) const { return white ? whiteIcon : blackIcon; }

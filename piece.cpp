@@ -9,6 +9,7 @@ Piece::Piece(QString name) : name(std::move(name)) {
   QString str = this->name.replace(' ', '-');
   whiteIcon = loadImage("icons/white-" + str + ".png");
   blackIcon = loadImage("icons/black-" + str + ".png");
+  royal = pieceConfig->value(str + "/royal").toBool();
   int size = pieceConfig->beginReadArray(str);
   for (int i = 0; i < size; i++) {
     pieceConfig->setArrayIndex(i);

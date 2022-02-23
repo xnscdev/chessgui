@@ -1,4 +1,5 @@
 #include "position.h"
+#include <QHashIterator>
 
 static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves, QPoint from,
                        int dx, int dy, qsizetype width, qsizetype height, QPoint capture = QPoint{-1, 0},
@@ -184,4 +185,21 @@ GamePosition positionAfterMove(GamePosition position, const Move &move) {
     oldPos.piece = nullptr;
   }
   return position;
+}
+
+bool legalPosition(const GamePosition &pos, bool white) {
+  for (int y = 0; y < pos.size(); y++) {
+    for (int x = 0; x < pos[y].size(); x++) {
+      if (pos[y][x].piece && pos[y][x].white != white) {
+        QHashIterator<QPoint, Move> it(availableMoves(pos, {-1, 0}, {x, y}));
+        while (it.hasNext()) {
+          it.next();
+          const GamePiece &target = pos[it.value().to.y()][it.value().to.x()];
+          if (target.piece && target.white == white && target.piece->royal)
+            return false;
+        }
+      }
+    }
+  }
+  return true;
 }

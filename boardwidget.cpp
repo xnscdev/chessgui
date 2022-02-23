@@ -105,9 +105,13 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
 void BoardWidget::BoardWidgetBackend::showAvailableMoves() {
   availableTiles.clear();
   availableMovesMap = availableMoves(position, ep, selectedPiece);
-  QHashIterator<QPoint, Move> it(availableMovesMap);
+  QMutableHashIterator<QPoint, Move> it(availableMovesMap);
   while (it.hasNext()) {
     it.next();
+    if (!legalPosition(positionAfterMove(position, it.value()), turn)) {
+      it.remove();
+      continue;
+    }
     availableTiles.append(it.value().to);
   }
   update();
