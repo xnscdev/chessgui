@@ -19,6 +19,38 @@ static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule,
   return true;
 }
 
+static void addSliderMove(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
+                          int dy, qsizetype width, qsizetype height) {
+  int sdy = dy;
+  if (!pos[from.y()][from.x()].white)
+    dy = -dy;
+  if (dx > 0) {
+    for (int i = 1; i < dx; i++) {
+      if (from.x() + i >= width || pos[from.y()][from.x() + i].piece)
+        return;
+    }
+  }
+  else if (dx < 0) {
+    for (int i = 1; i < -dx; i++) {
+      if (from.x() - i < 0 || pos[from.y()][from.x() - i].piece)
+        return;
+    }
+  }
+  else if (dy > 0) {
+    for (int i = 1; i < dy; i++) {
+      if (from.y() + i >= height || pos[from.y() + i][from.x()].piece)
+        return;
+    }
+  }
+  else if (dy < 0) {
+    for (int i = 1; i < -dy; i++) {
+      if (from.y() - i < 0 || pos[from.y() - i][from.x()].piece)
+        return;
+    }
+  }
+  tryAddMove(pos, rule, moves, from, dx, sdy, width, height);
+}
+
 static void addRiderMoves(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
                           int dy, qsizetype width, qsizetype height) {
   bool white = pos[from.y()][from.x()].white;
@@ -54,6 +86,10 @@ QSet<Move> availableMoves(const GamePosition &pos, QPoint from) {
   qsizetype width = pos[0].size();
   Piece *piece = pos[from.y()][from.x()].piece;
   for (auto &rule : piece->moveRules) {
+    if (rule.firstMove && pos[from.y()][from.x()].moved)
+      continue;
+    if (rule.type == Piece::MovementType::Slider && rule.dx && rule.dy)
+      rule.type = Piece::MovementType::Leaper;
     switch (rule.type) {
     case Piece::MovementType::Leaper:
       tryAddMove(pos, rule, moves, from, rule.dx, rule.dy, width, height);
@@ -61,6 +97,14 @@ QSet<Move> availableMoves(const GamePosition &pos, QPoint from) {
         tryAddMove(pos, rule, moves, from, -rule.dx, rule.dy, width, height);
         tryAddMove(pos, rule, moves, from, rule.dx, -rule.dy, width, height);
         tryAddMove(pos, rule, moves, from, -rule.dx, -rule.dy, width, height);
+      }
+      break;
+    case Piece::MovementType::Slider:
+      addSliderMove(pos, rule, moves, from, rule.dx, rule.dy, width, height);
+      if (rule.omnidirectional) {
+        addSliderMove(pos, rule, moves, from, -rule.dx, rule.dy, width, height);
+        addSliderMove(pos, rule, moves, from, rule.dx, -rule.dy, width, height);
+        addSliderMove(pos, rule, moves, from, -rule.dx, -rule.dy, width, height);
       }
       break;
     case Piece::MovementType::Rider:

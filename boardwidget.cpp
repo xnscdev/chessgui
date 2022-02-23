@@ -47,11 +47,9 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
 void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
   if (event->button() == Qt::LeftButton) {
     selectedPiece = selectedTile(event->pos());
-    if (pieceAt(selectedPiece).piece && prevSelectedPiece.x() == -1) {
-      availableTiles.clear();
-      for (auto &move : availableMoves(position, selectedPiece))
-        availableTiles.append(move.to);
-      update();
+    if (movablePieceAt(selectedPiece) && prevSelectedPiece.x() == -1) {
+      highlightedTile = selectedPiece;
+      showAvailableMoves();
     }
   }
 }
@@ -61,24 +59,27 @@ void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
     QPoint tile = selectedTile(event->pos());
     if (tile == selectedPiece) {
       if (prevSelectedPiece.x() == -1) {
-        if (pieceAt(selectedPiece).piece) {
-          highlightedTile = selectedPiece;
+        if (movablePieceAt(selectedPiece))
           prevSelectedPiece = tile;
-          update();
-        }
       }
       else if (tile != prevSelectedPiece) {
-        if (pieceAt(prevSelectedPiece).piece) {
-          highlightedTile = selectedPiece;
-          attemptMove(prevSelectedPiece, tile);
-          prevSelectedPiece.setX(-1);
+        if (movablePieceAt(prevSelectedPiece)) {
+          if (attemptMove(prevSelectedPiece, tile)) {
+            highlightedTile = selectedPiece;
+            prevSelectedPiece.setX(-1);
+          }
+          else if (movablePieceAt(selectedPiece)) {
+            highlightedTile = selectedPiece;
+            prevSelectedPiece = selectedPiece;
+            showAvailableMoves();
+          }
         }
       }
     }
     else {
-      if (pieceAt(selectedPiece).piece) {
+      if (movablePieceAt(selectedPiece) && attemptMove(selectedPiece, tile)) {
         highlightedTile = tile;
-        attemptMove(selectedPiece, tile);
+        update();
       }
     }
   }
@@ -101,16 +102,30 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
   return {tileX, tileY};
 }
 
-void BoardWidget::BoardWidgetBackend::attemptMove(QPoint from, QPoint to) {
-  GamePiece &fromPiece = pieceAt(from);
-  GamePiece &toPiece = pieceAt(to);
-  toPiece.piece = fromPiece.piece;
-  toPiece.white = fromPiece.white;
-  fromPiece.piece = nullptr;
+void BoardWidget::BoardWidgetBackend::showAvailableMoves() {
   availableTiles.clear();
+  for (auto &move : availableMoves(position, selectedPiece))
+    availableTiles.append(move.to);
   update();
 }
 
-GamePiece &BoardWidget::BoardWidgetBackend::pieceAt(QPoint tile) {
-  return position[tile.y()][tile.x()];
+bool BoardWidget::BoardWidgetBackend::attemptMove(QPoint from, QPoint to) {
+  bool moved = false;
+  if (availableTiles.contains(to)) {
+    GamePiece &fromPiece = position[from.y()][from.x()];
+    GamePiece &toPiece = position[to.y()][to.x()];
+    toPiece.piece = fromPiece.piece;
+    toPiece.white = fromPiece.white;
+    fromPiece.piece = nullptr;
+    toPiece.moved = true;
+    turn = !turn;
+    moved = true;
+  }
+  availableTiles.clear();
+  update ();
+  return moved;
+}
+
+bool BoardWidget::BoardWidgetBackend::movablePieceAt(QPoint tile) {
+  return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn;
 }

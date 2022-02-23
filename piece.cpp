@@ -17,6 +17,7 @@ Piece::Piece(QString name) : name(std::move(name)) {
     rule.dx = pieceConfig->value("dx").toInt();
     rule.dy = pieceConfig->value("dy").toInt();
     rule.omnidirectional = pieceConfig->value("omnidirectional").toBool();
+    rule.firstMove = pieceConfig->value("firstMove").toBool();
     rule.captures = static_cast<CaptureRule>(pieceConfig->value("captures").toInt());
     moveRules.append(rule);
   }

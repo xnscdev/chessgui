@@ -24,14 +24,16 @@ private:
     GameVariant &game;
     GamePosition position;
     bool orientation = false;
+    bool turn = true;
     QPoint highlightedTile{-1, 0};
     QPoint prevSelectedPiece{-1, 0};
     QPoint selectedPiece{-1, 0};
     QList<QPoint> availableTiles;
 
     QPoint selectedTile(QPoint pos);
-    void attemptMove(QPoint from, QPoint to);
-    GamePiece &pieceAt(QPoint tile);
+    void showAvailableMoves();
+    bool attemptMove(QPoint from, QPoint to);
+    bool movablePieceAt(QPoint tile);
   };
 
 public:

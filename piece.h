@@ -6,7 +6,7 @@
 
 class Piece {
 public:
-  enum class MovementType { Leaper, Rider, Hopper };
+  enum class MovementType { Leaper, Slider, Rider, Hopper };
 
   enum class CaptureRule { CannotCapture, CanCapture, MustCapture };
 
@@ -15,6 +15,7 @@ public:
     int dx;
     int dy;
     bool omnidirectional;
+    bool firstMove;
     CaptureRule captures;
   };
 
@@ -34,9 +35,10 @@ class GamePiece {
 public:
   Piece *piece;
   bool white;
+  bool moved;
 
-  GamePiece() : piece(nullptr), white(false) {}
-  GamePiece(Piece *piece, bool white) : piece(piece), white(white) {}
+  GamePiece() : piece(nullptr), white(false), moved(false) {}
+  GamePiece(Piece *piece, bool white) : piece(piece), white(white), moved(false) {}
 };
 
 #endif
