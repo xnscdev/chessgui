@@ -6,7 +6,7 @@
 
 class Piece {
 public:
-  enum class MovementType { Leaper, Slider, Rider, Hopper };
+  enum class MovementType { Leaper, Slider, Rider, Hopper, EnPassant };
 
   enum class CaptureRule { CannotCapture, CanCapture, MustCapture };
 
@@ -16,6 +16,7 @@ public:
     int dy;
     bool omnidirectional;
     bool firstMove;
+    bool setEp;
     CaptureRule captures;
   };
 

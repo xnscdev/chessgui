@@ -1,7 +1,8 @@
 #include "position.h"
 
-static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
-                       int dy, qsizetype width, qsizetype height) {
+static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves, QPoint from,
+                       int dx, int dy, qsizetype width, qsizetype height, QPoint capture = QPoint{-1, 0},
+                       QPoint ep = QPoint{-1, 0}) {
   bool white = pos[from.y()][from.x()].white;
   int x = from.x() + dx;
   int y = from.y() + (white ? dy : -dy);
@@ -15,14 +16,15 @@ static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule,
   }
   else if (rule.captures == Piece::CaptureRule::MustCapture)
     return false;
-  moves.insert({from, {x, y}});
+  moves.insert({x, y}, {from, {x, y}, capture, ep});
   return true;
 }
 
-static void addSliderMove(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
-                          int dy, qsizetype width, qsizetype height) {
+static void addSliderMove(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves,
+                          QPoint from, int dx, int dy, qsizetype width, qsizetype height) {
+  bool white = pos[from.y()][from.x()].white;
   int sdy = dy;
-  if (!pos[from.y()][from.x()].white)
+  if (!white)
     dy = -dy;
   if (dx > 0) {
     for (int i = 1; i < dx; i++) {
@@ -48,11 +50,15 @@ static void addSliderMove(const GamePosition &pos, const Piece::MovementRule &ru
         return;
     }
   }
-  tryAddMove(pos, rule, moves, from, dx, sdy, width, height);
+  dy = sdy;
+  QPoint ep = {-1, 0};
+  if (rule.setEp)
+    ep = {from.x(), from.y() + (white ? dy - 1 : -dy + 1)};
+  tryAddMove(pos, rule, moves, from, dx, dy, width, height, {-1, 0}, ep);
 }
 
-static void addRiderMoves(const GamePosition &pos, const Piece::MovementRule &rule, QSet<Move> &moves, QPoint from, int dx,
-                          int dy, qsizetype width, qsizetype height) {
+static void addRiderMoves(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves,
+                          QPoint from, int dx, int dy, qsizetype width, qsizetype height) {
   bool white = pos[from.y()][from.x()].white;
   for (int i = 1; tryAddMove(pos, rule, moves, from, dx * i, dy * i, width, height); i++) {
     int x = from.x() + dx * i;
@@ -60,6 +66,18 @@ static void addRiderMoves(const GamePosition &pos, const Piece::MovementRule &ru
     if (pos[y][x].piece && pos[y][x].white != white)
       break;
   }
+}
+
+static void addEnPassant(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves,
+                         QPoint ep, QPoint from, int dx, int dy, qsizetype width, qsizetype height) {
+  bool white = pos[from.y()][from.x()].white;
+  int x = from.x() + dx;
+  int y = from.y() + (white ? dy : -dy);
+  if (x < 0 || x >= width || y < 0 || y >= height)
+    return;
+  if (QPoint(x, y) != ep)
+    return;
+  tryAddMove(pos, rule, moves, from, dx, dy, width, height, {x, from.y()});
 }
 
 Move::operator QString() const {
@@ -71,17 +89,8 @@ Move::operator QString() const {
   return str;
 }
 
-GamePosition applyMove(GamePosition pos, const Move &move) {
-  GamePiece &fromTile = pos[move.from.y()][move.from.x()];
-  GamePiece &toTile = pos[move.to.y()][move.to.x()];
-  toTile.piece = fromTile.piece;
-  toTile.white = fromTile.white;
-  fromTile.piece = nullptr;
-  return pos;
-}
-
-QSet<Move> availableMoves(const GamePosition &pos, QPoint from) {
-  QSet<Move> moves;
+QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint from) {
+  QHash<QPoint, Move> moves;
   qsizetype height = pos.size();
   qsizetype width = pos[0].size();
   Piece *piece = pos[from.y()][from.x()].piece;
@@ -117,6 +126,9 @@ QSet<Move> availableMoves(const GamePosition &pos, QPoint from) {
       break;
     case Piece::MovementType::Hopper:
       break; // TODO: Implement
+    case Piece::MovementType::EnPassant:
+      addEnPassant(pos, rule, moves, ep, from, rule.dx, rule.dy, width, height);
+      break;
     }
   }
   return moves;

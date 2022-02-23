@@ -4,7 +4,7 @@
 #include "aspectratiowidget.h"
 #include "gamevariant.h"
 #include "piece.h"
-#include <QMap>
+#include <QHash>
 
 class BoardWidget : public AspectRatioWidget {
 private:
@@ -28,11 +28,13 @@ private:
     QPoint highlightedTile{-1, 0};
     QPoint prevSelectedPiece{-1, 0};
     QPoint selectedPiece{-1, 0};
+    QPoint ep{-1, 0};
     QList<QPoint> availableTiles;
+    QHash<QPoint, Move> availableMovesMap;
 
     QPoint selectedTile(QPoint pos);
     void showAvailableMoves();
-    bool attemptMove(QPoint from, QPoint to);
+    bool doMove(QPoint to);
     bool movablePieceAt(QPoint tile);
   };
 

@@ -64,7 +64,7 @@ void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       }
       else if (tile != prevSelectedPiece) {
         if (movablePieceAt(prevSelectedPiece)) {
-          if (attemptMove(prevSelectedPiece, tile)) {
+          if (doMove(tile)) {
             highlightedTile = selectedPiece;
             prevSelectedPiece.setX(-1);
           }
@@ -77,7 +77,7 @@ void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       }
     }
     else {
-      if (movablePieceAt(selectedPiece) && attemptMove(selectedPiece, tile)) {
+      if (movablePieceAt(selectedPiece) && doMove(tile)) {
         highlightedTile = tile;
         update();
       }
@@ -104,25 +104,37 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
 
 void BoardWidget::BoardWidgetBackend::showAvailableMoves() {
   availableTiles.clear();
-  for (auto &move : availableMoves(position, selectedPiece))
-    availableTiles.append(move.to);
+  availableMovesMap = availableMoves(position, ep, selectedPiece);
+  QHashIterator<QPoint, Move> it(availableMovesMap);
+  while (it.hasNext()) {
+    it.next();
+    availableTiles.append(it.value().to);
+  }
   update();
 }
 
-bool BoardWidget::BoardWidgetBackend::attemptMove(QPoint from, QPoint to) {
+bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
   bool moved = false;
-  if (availableTiles.contains(to)) {
-    GamePiece &fromPiece = position[from.y()][from.x()];
-    GamePiece &toPiece = position[to.y()][to.x()];
+  if (availableMovesMap.contains(to)) {
+    Move move = availableMovesMap[to];
+    GamePiece &fromPiece = position[move.from.y()][move.from.x()];
+    GamePiece &toPiece = position[move.to.y()][move.to.x()];
     toPiece.piece = fromPiece.piece;
     toPiece.white = fromPiece.white;
     fromPiece.piece = nullptr;
+    if (move.capture.x() != -1)
+      position[move.capture.y()][move.capture.x()].piece = nullptr;
+    if (move.ep.x() != -1)
+      ep = move.ep;
+    else
+      ep.setX(-1);
     toPiece.moved = true;
     turn = !turn;
     moved = true;
   }
   availableTiles.clear();
-  update ();
+  availableMovesMap.clear();
+  update();
   return moved;
 }
 
