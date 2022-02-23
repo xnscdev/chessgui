@@ -24,6 +24,7 @@ public:
   QString name;
   QList<MovementRule> moveRules;
   bool royal;
+  int promotes;
 
   explicit Piece(QString name);
   [[nodiscard]] const QImage &icon(bool white) const { return white ? whiteIcon : blackIcon; }

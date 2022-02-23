@@ -8,6 +8,12 @@ DefaultGameVariant::DefaultGameVariant()
     : rookPiece(new Piece("rook")), knightPiece(new Piece("knight")), bishopPiece(new Piece("bishop")),
       queenPiece(new Piece("queen")), kingPiece(new Piece("king")), pawnPiece(new Piece("pawn")) {
   size = QSize(8, 8);
+  pieces["rook"] = rookPiece;
+  pieces["knight"] = knightPiece;
+  pieces["bishop"] = bishopPiece;
+  pieces["queen"] = queenPiece;
+  pieces["king"] = kingPiece;
+  pieces["pawn"] = pawnPiece;
 }
 
 void DefaultGameVariant::setup(GamePosition &position) {

@@ -9,6 +9,7 @@
 class GameVariant {
 public:
   QSize size;
+  QMap<QString, Piece *> pieces;
 
   virtual void setup(GamePosition &position) = 0;
 };

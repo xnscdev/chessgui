@@ -127,6 +127,8 @@ bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
     toPiece.white = fromPiece.white;
     toPiece.moved = true;
     fromPiece.piece = nullptr;
+    if (game.size.height() - move.to.y() <= toPiece.piece->promotes)
+      promotePiece(toPiece);
     if (move.capture.x() != -1)
       position[move.capture.y()][move.capture.x()].piece = nullptr;
     if (move.castle.x() != -1) {
@@ -154,4 +156,8 @@ bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
 
 bool BoardWidget::BoardWidgetBackend::movablePieceAt(QPoint tile) {
   return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn;
+}
+
+void BoardWidget::BoardWidgetBackend::promotePiece(GamePiece &piece) {
+  piece.piece = game.pieces["queen"]; // TODO: Ask user for promotion piece
 }

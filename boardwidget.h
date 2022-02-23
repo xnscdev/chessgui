@@ -36,6 +36,7 @@ private:
     void showAvailableMoves();
     bool doMove(QPoint to);
     bool movablePieceAt(QPoint tile);
+    void promotePiece(GamePiece &piece);
   };
 
 public:

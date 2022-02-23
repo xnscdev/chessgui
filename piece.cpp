@@ -10,6 +10,7 @@ Piece::Piece(QString name) : name(std::move(name)) {
   whiteIcon = loadImage("icons/white-" + str + ".png");
   blackIcon = loadImage("icons/black-" + str + ".png");
   royal = pieceConfig->value(str + "/royal").toBool();
+  promotes = pieceConfig->value(str + "/promotes").toInt();
   int size = pieceConfig->beginReadArray(str);
   for (int i = 0; i < size; i++) {
     pieceConfig->setArrayIndex(i);
