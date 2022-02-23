@@ -86,10 +86,16 @@ static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, 
   bool white = pos[from.y()][from.x()].white;
   if (pos[from.y()][from.x()].moved)
     return;
+  GamePosition posCopy = pos;
+  posCopy[from.y()][from.x()].piece = nullptr;
   if (dx < 0) {
     for (int i = from.x() - 1; i >= 0; i--) {
       if (pos[from.y()][i].piece) {
         if (pos[from.y()][i].piece->name != "rook" || pos[from.y()][i].white != white || pos[from.y()][i].moved)
+          return;
+        posCopy[from.y()][i].piece = pos[from.y()][from.x()].piece;
+        posCopy[from.y()][i].white = white;
+        if (!legalPosition(posCopy, white))
           return;
         tryAddMove(pos, rule, moves, from, dx, 0, width, height, {-1, 0}, {from.x() + dx + 1, from.y()}, {i, from.y()});
         break;
@@ -100,6 +106,10 @@ static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, 
     for (int i = from.x() + 1; i < width; i++) {
       if (pos[from.y()][i].piece) {
         if (pos[from.y()][i].piece->name != "rook" || pos[from.y()][i].white != white || pos[from.y()][i].moved)
+          return;
+        posCopy[from.y()][i].piece = pos[from.y()][from.x()].piece;
+        posCopy[from.y()][i].white = white;
+        if (!legalPosition(posCopy, white))
           return;
         tryAddMove(pos, rule, moves, from, dx, 0, width, height, {-1, 0}, {from.x() + dx - 1, from.y()}, {i, from.y()});
         break;
