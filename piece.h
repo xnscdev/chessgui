@@ -6,7 +6,7 @@
 
 class Piece {
 public:
-  enum class MovementType { Leaper, Slider, Rider, Hopper, EnPassant };
+  enum class MovementType { Leaper, Slider, Rider, Hopper, EnPassant, Castle };
 
   enum class CaptureRule { CannotCapture, CanCapture, MustCapture };
 

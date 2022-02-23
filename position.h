@@ -19,6 +19,7 @@ struct Move {
   QPoint to;
   QPoint capture;
   QPoint ep;
+  QPoint castle;
 
   operator QString() const;
   bool operator==(const Move &o) const { return from == o.from && to == o.to; }

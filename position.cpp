@@ -2,7 +2,7 @@
 
 static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves, QPoint from,
                        int dx, int dy, qsizetype width, qsizetype height, QPoint capture = QPoint{-1, 0},
-                       QPoint ep = QPoint{-1, 0}) {
+                       QPoint ep = QPoint{-1, 0}, QPoint castle = QPoint{-1, 0}) {
   bool white = pos[from.y()][from.x()].white;
   int x = from.x() + dx;
   int y = from.y() + (white ? dy : -dy);
@@ -16,7 +16,7 @@ static bool tryAddMove(const GamePosition &pos, const Piece::MovementRule &rule,
   }
   else if (rule.captures == Piece::CaptureRule::MustCapture)
     return false;
-  moves.insert({x, y}, {from, {x, y}, capture, ep});
+  moves.insert({x, y}, {from, {x, y}, capture, ep, castle});
   return true;
 }
 
@@ -80,6 +80,33 @@ static void addEnPassant(const GamePosition &pos, const Piece::MovementRule &rul
   tryAddMove(pos, rule, moves, from, dx, dy, width, height, {x, from.y()});
 }
 
+static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, QHash<QPoint, Move> &moves,
+                      QPoint from, int dx, qsizetype width, qsizetype height) {
+  bool white = pos[from.y()][from.x()].white;
+  if (pos[from.y()][from.x()].moved)
+    return;
+  if (dx < 0) {
+    for (int i = from.x() - 1; i >= 0; i--) {
+      if (pos[from.y()][i].piece) {
+        if (pos[from.y()][i].piece->name != "rook" || pos[from.y()][i].white != white || pos[from.y()][i].moved)
+          return;
+        tryAddMove(pos, rule, moves, from, dx, 0, width, height, {-1, 0}, {from.x() + dx + 1, from.y()}, {i, from.y()});
+        break;
+      }
+    }
+  }
+  else if (dx > 0) {
+    for (int i = from.x() + 1; i < width; i++) {
+      if (pos[from.y()][i].piece) {
+        if (pos[from.y()][i].piece->name != "rook" || pos[from.y()][i].white != white || pos[from.y()][i].moved)
+          return;
+        tryAddMove(pos, rule, moves, from, dx, 0, width, height, {-1, 0}, {from.x() + dx - 1, from.y()}, {i, from.y()});
+        break;
+      }
+    }
+  }
+}
+
 Move::operator QString() const {
   QString str;
   str += static_cast<QChar>('a' + from.x());
@@ -128,6 +155,11 @@ QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint fr
       break; // TODO: Implement
     case Piece::MovementType::EnPassant:
       addEnPassant(pos, rule, moves, ep, from, rule.dx, rule.dy, width, height);
+      break;
+    case Piece::MovementType::Castle:
+      addCastle(pos, rule, moves, from, rule.dx, width, height);
+      if (rule.omnidirectional)
+        addCastle(pos, rule, moves, from, -rule.dx, width, height);
       break;
     }
   }
