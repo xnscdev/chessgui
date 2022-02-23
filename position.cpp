@@ -165,3 +165,23 @@ QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint fr
   }
   return moves;
 }
+
+GamePosition positionAfterMove(GamePosition position, const Move &move) {
+  GamePiece &fromPiece = position[move.from.y()][move.from.x()];
+  GamePiece &toPiece = position[move.to.y()][move.to.x()];
+  toPiece.piece = fromPiece.piece;
+  toPiece.white = fromPiece.white;
+  toPiece.moved = true;
+  fromPiece.piece = nullptr;
+  if (move.capture.x() != -1)
+    position[move.capture.y()][move.capture.x()].piece = nullptr;
+  if (move.castle.x() != -1) {
+    GamePiece &newPos = position[move.ep.y()][move.ep.x()];
+    GamePiece &oldPos = position[move.castle.y()][move.castle.x()];
+    newPos.piece = oldPos.piece;
+    newPos.white = oldPos.white;
+    newPos.moved = true;
+    oldPos.piece = nullptr;
+  }
+  return position;
+}

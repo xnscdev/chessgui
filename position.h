@@ -27,5 +27,6 @@ struct Move {
 };
 
 QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint from);
+GamePosition positionAfterMove(GamePosition position, const Move &move);
 
 #endif
