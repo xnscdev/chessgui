@@ -20,12 +20,12 @@
    <string>Chess GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,1">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,0">
     <item>
      <widget class="BoardWidget" name="boardWidget" native="true"/>
     </item>
     <item>
-     <widget class="QListWidget" name="movesList"/>
+     <widget class="MovesListWidget" name="movesList"/>
     </item>
    </layout>
   </widget>
@@ -47,6 +47,11 @@
    <extends>QWidget</extends>
    <header>boardwidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MovesListWidget</class>
+   <extends>QTableWidget</extends>
+   <header>moveslistwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

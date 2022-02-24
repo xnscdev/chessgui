@@ -3,6 +3,7 @@
 
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {
   ui->setupUi(this);
+  connect(ui->boardWidget, &BoardWidget::moveMade, ui->movesList, &MovesListWidget::recordMove);
 }
 
 ChessGUI::~ChessGUI() {

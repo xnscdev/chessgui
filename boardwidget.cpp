@@ -198,10 +198,10 @@ void BoardWidgetBackend::findCheckmate() {
 BoardWidget::BoardWidget(QWidget *parent)
     : AspectRatioWidget(new BoardWidgetBackend(*loadedVariant), static_cast<float>(loadedVariant->size.width()),
                         static_cast<float>(loadedVariant->size.height()), parent) {
-  connect(dynamic_cast<BoardWidgetBackend *>(widget()), &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
+  connect(dynamic_cast<BoardWidgetBackend *>(widget()), &BoardWidgetBackend::moveMade, this,
+          &BoardWidget::receiveMoveMade);
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {
-  qDebug() << move;
   emit moveMade(move);
 }
