@@ -127,7 +127,7 @@ bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
     toPiece.white = fromPiece.white;
     toPiece.moved = true;
     fromPiece.piece = nullptr;
-    if (game.size.height() - move.to.y() <= toPiece.piece->promotes)
+    if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= toPiece.piece->promotes)
       promotePiece(toPiece);
     if (move.capture.x() != -1)
       position[move.capture.y()][move.capture.x()].piece = nullptr;
