@@ -119,7 +119,6 @@ void BoardWidget::BoardWidgetBackend::showAvailableMoves() {
 }
 
 bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
-  bool moved = false;
   if (availableMovesMap.contains(to)) {
     Move move = availableMovesMap[to];
     GamePiece &fromPiece = position[move.from.y()][move.from.x()];
@@ -147,12 +146,12 @@ bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
         ep.setX(-1);
     }
     turn = !turn;
-    moved = true;
+    availableTiles.clear();
+    availableMovesMap.clear();
+    update();
+    return true;
   }
-  availableTiles.clear();
-  availableMovesMap.clear();
-  update();
-  return moved;
+  return false;
 }
 
 bool BoardWidget::BoardWidgetBackend::movablePieceAt(QPoint tile) {
@@ -160,7 +159,7 @@ bool BoardWidget::BoardWidgetBackend::movablePieceAt(QPoint tile) {
 }
 
 void BoardWidget::BoardWidgetBackend::promotePiece(GamePiece &piece) {
-  PromotionDialog dialog;
+  PromotionDialog dialog(piece.piece, game, turn);
   dialog.exec();
-  piece.piece = game.pieces["queen"];
+  piece.piece = dialog.selectedPiece;
 }
