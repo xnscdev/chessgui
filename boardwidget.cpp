@@ -190,14 +190,12 @@ void BoardWidgetBackend::findCheckmate() {
       GamePiece &piece = position[y][x];
       if (piece.piece && piece.white == turn) {
         QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
-        QMutableHashIterator<QPoint, Move> it(moves);
+        QHashIterator<QPoint, Move> it(moves);
         while (it.hasNext()) {
           it.next();
-          if (!legalPosition(positionAfterMove(position, it.value()), turn))
-            it.remove();
+          if (legalPosition(positionAfterMove(position, it.value()), turn))
+            return;
         }
-        if (!moves.isEmpty())
-          return;
       }
     }
   }
