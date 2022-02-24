@@ -23,6 +23,7 @@ private:
     constexpr static const QColor darkColor{206, 144, 89};
     GameVariant &game;
     GamePosition position;
+    bool canMove = true;
     bool orientation = false;
     bool turn = true;
     QPoint highlightedTile{-1, 0};
@@ -37,6 +38,7 @@ private:
     bool doMove(QPoint to);
     bool movablePieceAt(QPoint tile);
     void promotePiece(GamePiece &piece);
+    void findCheckmate();
   };
 
 public:

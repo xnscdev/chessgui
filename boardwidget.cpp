@@ -2,6 +2,7 @@
 #include "promotiondialog.h"
 #include <QMouseEvent>
 #include <QPainter>
+#include <QMessageBox>
 
 BoardWidget::BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   position.resize(game.size.height());
@@ -46,6 +47,8 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
 }
 
 void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
+  if (!canMove)
+    return;
   if (event->button() == Qt::LeftButton) {
     selectedPiece = selectedTile(event->pos());
     if (movablePieceAt(selectedPiece) && prevSelectedPiece.x() == -1) {
@@ -56,6 +59,8 @@ void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
 }
 
 void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
+  if (!canMove)
+    return;
   if (event->button() == Qt::LeftButton) {
     QPoint tile = selectedTile(event->pos());
     if (tile == selectedPiece) {
@@ -149,6 +154,7 @@ bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
     availableTiles.clear();
     availableMovesMap.clear();
     update();
+    findCheckmate();
     return true;
   }
   return false;
@@ -162,4 +168,28 @@ void BoardWidget::BoardWidgetBackend::promotePiece(GamePiece &piece) {
   PromotionDialog dialog(piece.piece, game, turn);
   dialog.exec();
   piece.piece = dialog.selectedPiece;
+}
+
+void BoardWidget::BoardWidgetBackend::findCheckmate() {
+  for (int y = 0; y < game.size.height(); y++) {
+    for (int x = 0; x < game.size.width(); x++) {
+      GamePiece &piece = position[y][x];
+      if (piece.piece && piece.white == turn) {
+        QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
+        QMutableHashIterator<QPoint, Move> it(moves);
+        while (it.hasNext()) {
+          it.next();
+          if (!legalPosition(positionAfterMove(position, it.value()), turn))
+            it.remove();
+        }
+        if (!moves.isEmpty())
+          return;
+      }
+    }
+  }
+  canMove = false;
+  QMessageBox box;
+  box.setText("Game Over");
+  box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
+  box.exec();
 }
