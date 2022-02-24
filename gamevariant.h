@@ -12,14 +12,17 @@ public:
   QMap<QString, Piece *> pieces;
 
   virtual void setup(GamePosition &position) = 0;
+  virtual QString moveName(GamePosition &position, const Move &move, QPoint ep, bool white) const { return move; }
 };
 
 class DefaultGameVariant : public GameVariant {
 public:
   DefaultGameVariant();
   void setup(GamePosition &position) override;
+  QString moveName(GamePosition &position, const Move &move, QPoint ep, bool white) const override;
 
 private:
+  QMap<QString, QString> notation;
   Piece *rookPiece;
   Piece *knightPiece;
   Piece *bishopPiece;

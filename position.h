@@ -26,8 +26,8 @@ struct Move {
   friend qhash_result_t qHash(const Move &move, qhash_result_t seed) { return qHashMulti(seed, move.from, move.to); }
 };
 
-QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint from);
+QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint from, bool checkCastle = true);
 GamePosition positionAfterMove(GamePosition position, const Move &move);
-bool legalPosition(const GamePosition &pos, bool white);
+bool legalPosition(const GamePosition &pos, bool white, bool checkCastle = true);
 
 #endif

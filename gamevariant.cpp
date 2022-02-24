@@ -14,6 +14,11 @@ DefaultGameVariant::DefaultGameVariant()
   pieces["queen"] = queenPiece;
   pieces["king"] = kingPiece;
   pieces["pawn"] = pawnPiece;
+  notation["rook"] = "R";
+  notation["knight"] = "N";
+  notation["bishop"] = "B";
+  notation["queen"] = "Q";
+  notation["king"] = "K";
 }
 
 void DefaultGameVariant::setup(GamePosition &position) {
@@ -39,6 +44,51 @@ void DefaultGameVariant::setup(GamePosition &position) {
     position[1][i] = GamePiece(pawnPiece, true);
     position[6][i] = GamePiece(pawnPiece, false);
   }
+}
+
+QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, QPoint ep, bool white) const {
+  Piece *piece = position[move.from.y()][move.from.x()].piece;
+  QString str;
+  if (move.castle.x() != -1) {
+    if (move.castle.x() < move.from.x())
+      return "O-O-O";
+    else
+      return "O-O";
+  }
+  if (piece != pawnPiece)
+    str += notation[piece->name];
+  for (int y = 0; y < size.height(); y++) {
+    bool found = false;
+    for (int x = 0; x < size.width(); x++) {
+      if (QPoint(x, y) != move.from && position[y][x].piece == piece && position[y][x].white == white) {
+        QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
+        QMutableHashIterator<QPoint, Move> it(moves);
+        while (it.hasNext()) {
+          it.next();
+          if (it.value().to == move.to && legalPosition(positionAfterMove(position, it.value()), white)) {
+            if (x != move.from.x())
+              str += static_cast<QChar>('a' + move.from.x());
+            else
+              str += QString::number(move.from.y() + 1);
+            found = true;
+            break;
+          }
+        }
+      }
+      if (found)
+        break;
+    }
+    if (found)
+      break;
+  }
+
+  if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1)
+    str += 'x';
+  str += static_cast<QChar>('a' + move.to.x());
+  str += QString::number(move.to.y() + 1);
+  if (!legalPosition(positionAfterMove(position, move), !white))
+    str += "+";
+  return str;
 }
 
 void initGameData() {

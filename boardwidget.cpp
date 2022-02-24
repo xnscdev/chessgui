@@ -1,10 +1,10 @@
 #include "boardwidget.h"
 #include "promotiondialog.h"
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QMessageBox>
 
-BoardWidget::BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
+BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   position.resize(game.size.height());
   for (auto &row : position) {
     row.resize(game.size.width());
@@ -12,7 +12,7 @@ BoardWidget::BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *
   game.setup(position);
 }
 
-void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
+void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   int xStep = width() / game.size.width();
   int yStep = height() / game.size.height();
@@ -46,7 +46,7 @@ void BoardWidget::BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   }
 }
 
-void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
+void BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
   if (!canMove)
     return;
   if (event->button() == Qt::LeftButton) {
@@ -58,7 +58,7 @@ void BoardWidget::BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
   }
 }
 
-void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
+void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
   if (!canMove)
     return;
   if (event->button() == Qt::LeftButton) {
@@ -91,7 +91,7 @@ void BoardWidget::BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
-QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
+QPoint BoardWidgetBackend::selectedTile(QPoint pos) {
   int xStep = width() / game.size.width();
   int yStep = height() / game.size.height();
   int tileX = pos.x() / xStep;
@@ -108,7 +108,7 @@ QPoint BoardWidget::BoardWidgetBackend::selectedTile(QPoint pos) {
   return {tileX, tileY};
 }
 
-void BoardWidget::BoardWidgetBackend::showAvailableMoves() {
+void BoardWidgetBackend::showAvailableMoves() {
   availableTiles.clear();
   availableMovesMap = availableMoves(position, ep, selectedPiece);
   QMutableHashIterator<QPoint, Move> it(availableMovesMap);
@@ -123,9 +123,10 @@ void BoardWidget::BoardWidgetBackend::showAvailableMoves() {
   update();
 }
 
-bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
+bool BoardWidgetBackend::doMove(QPoint to) {
   if (availableMovesMap.contains(to)) {
     Move move = availableMovesMap[to];
+    emit moveMade(game.moveName(position, move, ep, turn));
     GamePiece &fromPiece = position[move.from.y()][move.from.x()];
     GamePiece &toPiece = position[move.to.y()][move.to.x()];
     toPiece.piece = fromPiece.piece;
@@ -160,17 +161,17 @@ bool BoardWidget::BoardWidgetBackend::doMove(QPoint to) {
   return false;
 }
 
-bool BoardWidget::BoardWidgetBackend::movablePieceAt(QPoint tile) {
+bool BoardWidgetBackend::movablePieceAt(QPoint tile) {
   return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn;
 }
 
-void BoardWidget::BoardWidgetBackend::promotePiece(GamePiece &piece) {
+void BoardWidgetBackend::promotePiece(GamePiece &piece) {
   PromotionDialog dialog(piece.piece, game, turn);
   dialog.exec();
   piece.piece = dialog.selectedPiece;
 }
 
-void BoardWidget::BoardWidgetBackend::findCheckmate() {
+void BoardWidgetBackend::findCheckmate() {
   for (int y = 0; y < game.size.height(); y++) {
     for (int x = 0; x < game.size.width(); x++) {
       GamePiece &piece = position[y][x];
@@ -192,4 +193,15 @@ void BoardWidget::BoardWidgetBackend::findCheckmate() {
   box.setText("Game Over");
   box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
   box.exec();
+}
+
+BoardWidget::BoardWidget(QWidget *parent)
+    : AspectRatioWidget(new BoardWidgetBackend(*loadedVariant), static_cast<float>(loadedVariant->size.width()),
+                        static_cast<float>(loadedVariant->size.height()), parent) {
+  connect(dynamic_cast<BoardWidgetBackend *>(widget()), &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
+}
+
+void BoardWidget::receiveMoveMade(const QString &move) {
+  qDebug() << move;
+  emit moveMade(move);
 }

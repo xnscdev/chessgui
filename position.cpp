@@ -86,6 +86,8 @@ static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, 
   bool white = pos[from.y()][from.x()].white;
   if (pos[from.y()][from.x()].moved)
     return;
+  if (!legalPosition(pos, white, false))
+    return;
   GamePosition posCopy = pos;
   posCopy[from.y()][from.x()].piece = nullptr;
   if (dx < 0) {
@@ -95,7 +97,7 @@ static void addCastle(const GamePosition &pos, const Piece::MovementRule &rule, 
           return;
         posCopy[from.y()][i].piece = pos[from.y()][from.x()].piece;
         posCopy[from.y()][i].white = white;
-        if (!legalPosition(posCopy, white))
+        if (!legalPosition(posCopy, white, false))
           return;
         tryAddMove(pos, rule, moves, from, dx, 0, width, height, {-1, 0}, {from.x() + dx + 1, from.y()}, {i, from.y()});
         break;
@@ -127,7 +129,7 @@ Move::operator QString() const {
   return str;
 }
 
-QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint from) {
+QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint from, bool checkCastle) {
   QHash<QPoint, Move> moves;
   qsizetype height = pos.size();
   qsizetype width = pos[0].size();
@@ -168,9 +170,11 @@ QHash<QPoint, Move> availableMoves(const GamePosition &pos, QPoint ep, QPoint fr
       addEnPassant(pos, rule, moves, ep, from, rule.dx, rule.dy, width, height);
       break;
     case Piece::MovementType::Castle:
-      addCastle(pos, rule, moves, from, rule.dx, width, height);
-      if (rule.omnidirectional)
-        addCastle(pos, rule, moves, from, -rule.dx, width, height);
+      if (checkCastle) {
+        addCastle(pos, rule, moves, from, rule.dx, width, height);
+        if (rule.omnidirectional)
+          addCastle(pos, rule, moves, from, -rule.dx, width, height);
+      }
       break;
     }
   }
@@ -197,11 +201,11 @@ GamePosition positionAfterMove(GamePosition position, const Move &move) {
   return position;
 }
 
-bool legalPosition(const GamePosition &pos, bool white) {
+bool legalPosition(const GamePosition &pos, bool white, bool checkCastle) {
   for (int y = 0; y < pos.size(); y++) {
     for (int x = 0; x < pos[y].size(); x++) {
       if (pos[y][x].piece && pos[y][x].white != white) {
-        QHashIterator<QPoint, Move> it(availableMoves(pos, {-1, 0}, {x, y}));
+        QHashIterator<QPoint, Move> it(availableMoves(pos, {-1, 0}, {x, y}, checkCastle));
         while (it.hasNext()) {
           it.next();
           const GamePiece &target = pos[it.value().to.y()][it.value().to.x()];
