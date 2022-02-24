@@ -5,11 +5,24 @@
 #include <QPainter>
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
+  reset();
+}
+
+void BoardWidgetBackend::reset() {
+  canMove = true;
+  turn = true;
+  highlightedTile.setX(-1);
+  prevSelectedPiece.setX(-1);
+  selectedPiece.setX(-1);
+  ep.setX(-1);
+
+  position.clear();
   position.resize(game.size.height());
   for (auto &row : position) {
     row.resize(game.size.width());
   }
   game.setup(position);
+  update();
 }
 
 void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
@@ -198,8 +211,13 @@ void BoardWidgetBackend::findCheckmate() {
 BoardWidget::BoardWidget(QWidget *parent)
     : AspectRatioWidget(new BoardWidgetBackend(*loadedVariant), static_cast<float>(loadedVariant->size.width()),
                         static_cast<float>(loadedVariant->size.height()), parent) {
-  connect(dynamic_cast<BoardWidgetBackend *>(widget()), &BoardWidgetBackend::moveMade, this,
+  backend = dynamic_cast<BoardWidgetBackend *>(widget());
+  connect(backend, &BoardWidgetBackend::moveMade, this,
           &BoardWidget::receiveMoveMade);
+}
+
+void BoardWidget::reset() {
+  backend->reset();
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {

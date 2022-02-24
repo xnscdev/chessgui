@@ -10,6 +10,13 @@ MovesListWidget::MovesListWidget(QWidget *parent) : QTableWidget(parent), moveNu
   setRowCount(1);
 }
 
+void MovesListWidget::clearMoves() {
+  clear();
+  setRowCount(1);
+  moveNumber = 0;
+  turn = true;
+}
+
 void MovesListWidget::recordMove(const QString &move) {
   setItem(moveNumber, turn ? 0 : 1, new QTableWidgetItem(move));
   turn = !turn;

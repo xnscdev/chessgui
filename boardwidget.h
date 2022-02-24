@@ -11,6 +11,7 @@ class BoardWidgetBackend : public QWidget {
 
 public:
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
+  void reset();
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -23,13 +24,13 @@ private:
   constexpr static const QColor darkColor{206, 144, 89};
   GameVariant &game;
   GamePosition position;
-  bool canMove = true;
   bool orientation = false;
-  bool turn = true;
-  QPoint highlightedTile{-1, 0};
-  QPoint prevSelectedPiece{-1, 0};
-  QPoint selectedPiece{-1, 0};
-  QPoint ep{-1, 0};
+  bool canMove;
+  bool turn;
+  QPoint highlightedTile;
+  QPoint prevSelectedPiece;
+  QPoint selectedPiece;
+  QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
 
@@ -49,6 +50,10 @@ class BoardWidget : public AspectRatioWidget {
 
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
+  void reset();
+
+private:
+  BoardWidgetBackend *backend;
 
 signals:
   void moveMade(const QString &move);

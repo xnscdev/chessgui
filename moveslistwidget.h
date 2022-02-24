@@ -8,6 +8,7 @@ class MovesListWidget : public QTableWidget {
 
 public:
   explicit MovesListWidget(QWidget *parent = nullptr);
+  void clearMoves();
 
 public slots:
   void recordMove(const QString &move);

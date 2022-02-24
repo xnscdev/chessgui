@@ -16,6 +16,10 @@ public:
   explicit ChessGUI(QWidget *parent = nullptr);
   ~ChessGUI() override;
 
+public slots:
+  void newGame();
+  void saveGame();
+
 private:
   Ui::ChessGUI *ui;
 };

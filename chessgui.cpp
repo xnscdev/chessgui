@@ -9,3 +9,12 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
 ChessGUI::~ChessGUI() {
   delete ui;
 }
+
+void ChessGUI::newGame() {
+  ui->boardWidget->reset();
+  ui->movesList->clearMoves();
+}
+
+void ChessGUI::saveGame() {
+  qDebug() << "Saving games is not implemented"; // TODO: Implement
+}
