@@ -82,8 +82,11 @@ QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, Q
       break;
   }
 
-  if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1)
+  if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1) {
+    if (piece == pawnPiece)
+      str += static_cast<QChar>('a' + move.from.x());
     str += 'x';
+  }
   str += static_cast<QChar>('a' + move.to.x());
   str += QString::number(move.to.y() + 1);
 
