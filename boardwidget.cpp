@@ -139,15 +139,18 @@ void BoardWidgetBackend::showAvailableMoves() {
 bool BoardWidgetBackend::doMove(QPoint to) {
   if (availableMovesMap.contains(to)) {
     Move move = availableMovesMap[to];
-    emit moveMade(game.moveName(position, move, ep, turn));
     GamePiece &fromPiece = position[move.from.y()][move.from.x()];
     GamePiece &toPiece = position[move.to.y()][move.to.x()];
+    Piece *promotionPiece = nullptr;
+    if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
+      promotionPiece = promotePiece(fromPiece.piece);
+    emit moveMade(game.moveName(position, move, ep, promotionPiece, turn));
     toPiece.piece = fromPiece.piece;
     toPiece.white = fromPiece.white;
     toPiece.moved = true;
     fromPiece.piece = nullptr;
-    if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= toPiece.piece->promotes)
-      promotePiece(toPiece);
+    if (promotionPiece)
+      toPiece.piece = promotionPiece;
     if (move.capture.x() != -1)
       position[move.capture.y()][move.capture.x()].piece = nullptr;
     if (move.castle.x() != -1) {
@@ -178,10 +181,10 @@ bool BoardWidgetBackend::movablePieceAt(QPoint tile) {
   return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn;
 }
 
-void BoardWidgetBackend::promotePiece(GamePiece &piece) {
-  PromotionDialog dialog(piece.piece, game, turn);
+Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
+  PromotionDialog dialog(oldPiece, game, turn);
   dialog.exec();
-  piece.piece = dialog.selectedPiece;
+  return dialog.selectedPiece;
 }
 
 void BoardWidgetBackend::findCheckmate() {

@@ -4,7 +4,18 @@
 #include "aspectratiowidget.h"
 #include "gamevariant.h"
 #include "piece.h"
+#include <QDate>
 #include <QHash>
+
+struct GameMetadata {
+  QString event = "?";
+  QString site = "?";
+  QDate date = QDate::currentDate();
+  QString round = "?";
+  QString whitePlayer = "?";
+  QString blackPlayer = "?";
+  QString result = "*";
+};
 
 class BoardWidgetBackend : public QWidget {
   Q_OBJECT
@@ -33,12 +44,13 @@ private:
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
+  GameMetadata metadata;
 
   QPoint selectedTile(QPoint pos);
   void showAvailableMoves();
   bool doMove(QPoint to);
   bool movablePieceAt(QPoint tile);
-  void promotePiece(GamePiece &piece);
+  Piece *promotePiece(Piece *oldPiece);
   void findCheckmate();
 
 signals:
