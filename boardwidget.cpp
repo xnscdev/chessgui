@@ -11,10 +11,14 @@ BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : gam
 void BoardWidgetBackend::reset() {
   canMove = true;
   turn = true;
+  historyMove = -1;
+  history.clear();
   highlightedTile.setX(-1);
   prevSelectedPiece.setX(-1);
   selectedPiece.setX(-1);
   ep.setX(-1);
+  availableTiles.clear();
+  availableMovesMap.clear();
 
   position.clear();
   position.resize(game.size.height());
@@ -34,7 +38,9 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
       QPoint point(x, game.size.height() - y - 1);
-      if (point == highlightedTile)
+      if ((historyMove == -1 && point == highlightedTile) ||
+          (historyMove != -1 &&
+           (point == history[historyMove].prevMove.to || point == history[historyMove].prevMove.from)))
         color = highlightColor;
       else if ((x + y) & 1)
         color = darkColor;
@@ -46,21 +52,14 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
     }
   }
 
-  for (int x = 0; x < game.size.width(); x++) {
-    for (int y = 0; y < game.size.height(); y++) {
-      Piece *piece = position[y][x].piece;
-      qreal tx = xStep * (orientation ? game.size.width() - x - 1 : x);
-      qreal ty = yStep * (orientation ? y : game.size.height() - y - 1);
-      if (piece) {
-        QRectF target(tx, ty, xStep, yStep);
-        painter.drawImage(target, piece->icon(position[y][x].white), Piece::iconBox);
-      }
-    }
-  }
+  if (historyMove == -1)
+    drawPosition(painter, position);
+  else
+    drawPosition(painter, history[historyMove].pos);
 }
 
 void BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
-  if (!canMove)
+  if (!canMove || historyMove != -1)
     return;
   if (event->button() == Qt::LeftButton) {
     selectedPiece = selectedTile(event->pos());
@@ -72,7 +71,7 @@ void BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
 }
 
 void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
-  if (!canMove)
+  if (!canMove || historyMove != -1)
     return;
   if (event->button() == Qt::LeftButton) {
     QPoint tile = selectedTile(event->pos());
@@ -121,6 +120,22 @@ QPoint BoardWidgetBackend::selectedTile(QPoint pos) {
   return {tileX, tileY};
 }
 
+void BoardWidgetBackend::drawPosition(QPainter &painter, GamePosition &pos) {
+  int xStep = width() / game.size.width();
+  int yStep = height() / game.size.height();
+  for (int x = 0; x < game.size.width(); x++) {
+    for (int y = 0; y < game.size.height(); y++) {
+      Piece *piece = pos[y][x].piece;
+      qreal tx = xStep * (orientation ? game.size.width() - x - 1 : x);
+      qreal ty = yStep * (orientation ? y : game.size.height() - y - 1);
+      if (piece) {
+        QRectF target(tx, ty, xStep, yStep);
+        painter.drawImage(target, piece->icon(pos[y][x].white), Piece::iconBox);
+      }
+    }
+  }
+}
+
 void BoardWidgetBackend::showAvailableMoves() {
   availableTiles.clear();
   availableMovesMap = availableMoves(position, ep, selectedPiece);
@@ -139,15 +154,18 @@ void BoardWidgetBackend::showAvailableMoves() {
 bool BoardWidgetBackend::doMove(QPoint to) {
   if (availableMovesMap.contains(to)) {
     Move move = availableMovesMap[to];
-    emit moveMade(game.moveName(position, move, ep, turn));
     GamePiece &fromPiece = position[move.from.y()][move.from.x()];
     GamePiece &toPiece = position[move.to.y()][move.to.x()];
+    Piece *promotionPiece = nullptr;
+    if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
+      promotionPiece = promotePiece(fromPiece.piece);
+    emit moveMade(game.moveName(position, move, ep, promotionPiece, turn));
     toPiece.piece = fromPiece.piece;
     toPiece.white = fromPiece.white;
     toPiece.moved = true;
     fromPiece.piece = nullptr;
-    if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= toPiece.piece->promotes)
-      promotePiece(toPiece);
+    if (promotionPiece)
+      toPiece.piece = promotionPiece;
     if (move.capture.x() != -1)
       position[move.capture.y()][move.capture.x()].piece = nullptr;
     if (move.castle.x() != -1) {
@@ -178,10 +196,10 @@ bool BoardWidgetBackend::movablePieceAt(QPoint tile) {
   return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn;
 }
 
-void BoardWidgetBackend::promotePiece(GamePiece &piece) {
-  PromotionDialog dialog(piece.piece, game, turn);
+Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
+  PromotionDialog dialog(oldPiece, game, turn);
   dialog.exec();
-  piece.piece = dialog.selectedPiece;
+  return dialog.selectedPiece;
 }
 
 void BoardWidgetBackend::findCheckmate() {
@@ -200,6 +218,7 @@ void BoardWidgetBackend::findCheckmate() {
     }
   }
   canMove = false;
+  metadata.result = turn ? "0-1" : "1-0";
   QMessageBox box;
   box.setText("Game Over");
   box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
@@ -210,12 +229,31 @@ BoardWidget::BoardWidget(QWidget *parent)
     : AspectRatioWidget(new BoardWidgetBackend(*loadedVariant), static_cast<float>(loadedVariant->size.width()),
                         static_cast<float>(loadedVariant->size.height()), parent) {
   backend = dynamic_cast<BoardWidgetBackend *>(widget());
-  connect(backend, &BoardWidgetBackend::moveMade, this,
-          &BoardWidget::receiveMoveMade);
+  connect(backend, &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
 }
 
 void BoardWidget::reset() {
   backend->reset();
+}
+
+QString BoardWidget::metadataPGN() const {
+  QString str;
+  str += "[Event \"" + backend->metadata.event + "\"]\n";
+  str += "[Site \"" + backend->metadata.site + "\"]\n";
+
+  str += "[Date \"";
+  str += QString::number(backend->metadata.date.year()).rightJustified(4, '0');
+  str += '.';
+  str += QString::number(backend->metadata.date.month()).rightJustified(2, '0');
+  str += '.';
+  str += QString::number(backend->metadata.date.day()).rightJustified(2, '0');
+  str += "\"]\n";
+
+  str += "[Round \"" + backend->metadata.round + "\"]\n";
+  str += "[White \"" + backend->metadata.whitePlayer + "\"]\n";
+  str += "[Black \"" + backend->metadata.blackPlayer + "\"]\n";
+  str += "[Result \"" + backend->metadata.result + "\"]\n\n";
+  return str;
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {

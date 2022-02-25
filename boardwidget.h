@@ -4,12 +4,30 @@
 #include "aspectratiowidget.h"
 #include "gamevariant.h"
 #include "piece.h"
+#include <QDate>
 #include <QHash>
+
+struct GameHistoryPosition {
+  GamePosition pos;
+  Move prevMove;
+};
+
+struct GameMetadata {
+  QString event = "?";
+  QString site = "?";
+  QDate date = QDate::currentDate();
+  QString round = "?";
+  QString whitePlayer = "?";
+  QString blackPlayer = "?";
+  QString result = "*";
+};
 
 class BoardWidgetBackend : public QWidget {
   Q_OBJECT
 
 public:
+  GameMetadata metadata;
+
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
 
@@ -27,18 +45,21 @@ private:
   bool orientation = false;
   bool canMove;
   bool turn;
+  int historyMove;
   QPoint highlightedTile;
   QPoint prevSelectedPiece;
   QPoint selectedPiece;
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
+  QList<GameHistoryPosition> history;
 
   QPoint selectedTile(QPoint pos);
+  void drawPosition(QPainter &painter, GamePosition &position);
   void showAvailableMoves();
   bool doMove(QPoint to);
   bool movablePieceAt(QPoint tile);
-  void promotePiece(GamePiece &piece);
+  Piece *promotePiece(Piece *oldPiece);
   void findCheckmate();
 
 signals:
@@ -51,6 +72,7 @@ class BoardWidget : public AspectRatioWidget {
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
   void reset();
+  QString metadataPGN() const;
 
 private:
   BoardWidgetBackend *backend;
