@@ -25,7 +25,43 @@
      <widget class="BoardWidget" name="boardWidget" native="true"/>
     </item>
     <item>
-     <widget class="MovesListWidget" name="movesList"/>
+     <layout class="QVBoxLayout" name="rightPanel">
+      <item>
+       <widget class="MovesListWidget" name="movesList"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="moveControlPanel">
+        <item>
+         <widget class="QPushButton" name="firstMoveButton">
+          <property name="text">
+           <string>&lt;&lt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="prevMoveButton">
+          <property name="text">
+           <string>&lt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="nextMoveButton">
+          <property name="text">
+           <string>&gt;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="lastMoveButton">
+          <property name="text">
+           <string>&gt;&gt;</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

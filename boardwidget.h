@@ -7,6 +7,11 @@
 #include <QDate>
 #include <QHash>
 
+struct GameHistoryPosition {
+  GamePosition pos;
+  Move prevMove;
+};
+
 struct GameMetadata {
   QString event = "?";
   QString site = "?";
@@ -40,14 +45,17 @@ private:
   bool orientation = false;
   bool canMove;
   bool turn;
+  int historyMove;
   QPoint highlightedTile;
   QPoint prevSelectedPiece;
   QPoint selectedPiece;
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
+  QList<GameHistoryPosition> history;
 
   QPoint selectedTile(QPoint pos);
+  void drawPosition(QPainter &painter, GamePosition &position);
   void showAvailableMoves();
   bool doMove(QPoint to);
   bool movablePieceAt(QPoint tile);
