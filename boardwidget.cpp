@@ -14,6 +14,7 @@ void BoardWidgetBackend::reset() {
   historyMove = -1;
   history.clear();
   highlightedTile.setX(-1);
+  moveFromTile.setX(-1);
   prevSelectedPiece.setX(-1);
   selectedPiece.setX(-1);
   ep.setX(-1);
@@ -26,30 +27,7 @@ void BoardWidgetBackend::reset() {
     row.resize(game.size.width());
   }
   game.setup(position);
-  update();
-}
-
-void BoardWidgetBackend::toFirstMove() {
-  historyMove = 0;
-  update();
-}
-
-void BoardWidgetBackend::toPrevMove() {
-  if (historyMove > 0)
-    historyMove--;
-  else if (historyMove == -1)
-    historyMove = history.size() - 1;
-  update();
-}
-
-void BoardWidgetBackend::toNextMove() {
-  if (++historyMove == history.size())
-    historyMove = -1;
-  update();
-}
-
-void BoardWidgetBackend::toLastMove() {
-  historyMove = -1;
+  history.append({position, {{-1, 0}, {-1, 0}}});
   update();
 }
 
@@ -58,13 +36,23 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   int xStep = width() / game.size.width();
   int yStep = height() / game.size.height();
   painter.setPen(Qt::lightGray);
+
+  QPoint toHighlight;
+  QPoint fromHighlight;
+  if (historyMove == -1) {
+    toHighlight = highlightedTile;
+    fromHighlight = moveFromTile;
+  }
+  else {
+    toHighlight = history[historyMove].prevMove.to;
+    fromHighlight = history[historyMove].prevMove.from;
+  }
+
   for (int x = 0; x < game.size.width(); x++) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
       QPoint point(x, game.size.height() - y - 1);
-      if ((historyMove == -1 && point == highlightedTile) ||
-          (historyMove != -1 &&
-           (point == history[historyMove].prevMove.to || point == history[historyMove].prevMove.from)))
+      if (point == toHighlight || point == fromHighlight)
         color = highlightColor;
       else if ((x + y) & 1)
         color = darkColor;
@@ -119,10 +107,13 @@ void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       }
     }
     else {
-      if (movablePieceAt(selectedPiece) && doMove(tile)) {
+      if (movablePieceAt(selectedPiece) && doMove(tile))
         highlightedTile = tile;
-        update();
+      else {
+        availableTiles.clear();
+        availableMovesMap.clear();
       }
+      update();
     }
   }
 }
@@ -184,6 +175,7 @@ bool BoardWidgetBackend::doMove(QPoint to) {
     if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
       promotionPiece = promotePiece(fromPiece.piece);
     emit moveMade(game.moveName(position, move, ep, promotionPiece, turn));
+
     toPiece.piece = fromPiece.piece;
     toPiece.white = fromPiece.white;
     toPiece.moved = true;
@@ -206,9 +198,12 @@ bool BoardWidgetBackend::doMove(QPoint to) {
       else
         ep.setX(-1);
     }
+
     turn = !turn;
     availableTiles.clear();
     availableMovesMap.clear();
+    history.append({position, move});
+    moveFromTile = move.from;
     update();
     findCheckmate();
     return true;
@@ -278,4 +273,29 @@ QString BoardWidget::metadataPGN() const {
 
 void BoardWidget::receiveMoveMade(const QString &move) {
   emit moveMade(move);
+}
+
+void BoardWidgetBackend::toFirstMove() {
+  if (history.size() > 1)
+    historyMove = 0;
+  update();
+}
+
+void BoardWidgetBackend::toPrevMove() {
+  if (historyMove > 0)
+    historyMove--;
+  else if (historyMove == -1)
+    historyMove = static_cast<int>(history.size()) - 2;
+  update();
+}
+
+void BoardWidgetBackend::toNextMove() {
+  if (historyMove != -1 && ++historyMove == history.size() - 1)
+    historyMove = -1;
+  update();
+}
+
+void BoardWidgetBackend::toLastMove() {
+  historyMove = -1;
+  update();
 }

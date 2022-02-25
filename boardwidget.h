@@ -51,6 +51,7 @@ private:
   bool turn;
   int historyMove;
   QPoint highlightedTile;
+  QPoint moveFromTile;
   QPoint prevSelectedPiece;
   QPoint selectedPiece;
   QPoint ep;
