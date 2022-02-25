@@ -21,6 +21,8 @@ class BoardWidgetBackend : public QWidget {
   Q_OBJECT
 
 public:
+  GameMetadata metadata;
+
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
 
@@ -44,7 +46,6 @@ private:
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
-  GameMetadata metadata;
 
   QPoint selectedTile(QPoint pos);
   void showAvailableMoves();
@@ -63,6 +64,7 @@ class BoardWidget : public AspectRatioWidget {
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
   void reset();
+  QString metadataPGN() const;
 
 private:
   BoardWidgetBackend *backend;

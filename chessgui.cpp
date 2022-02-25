@@ -1,5 +1,6 @@
 #include "chessgui.h"
 #include "ui_chessgui.h"
+#include <QFileDialog>
 
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {
   ui->setupUi(this);
@@ -16,5 +17,12 @@ void ChessGUI::newGame() {
 }
 
 void ChessGUI::saveGame() {
-  qDebug() << "Saving games is not implemented"; // TODO: Implement
+  QString contents = ui->boardWidget->metadataPGN();
+  contents += ui->movesList->pgnMoveString + '\n';
+
+  QString path = QFileDialog::getSaveFileName(this, "Save game", QDir::homePath(), "Portable Game Notation (.pgn)");
+  QFile file(path);
+  file.open(QIODevice::WriteOnly);
+  file.write(contents.toUtf8());
+  file.close();
 }

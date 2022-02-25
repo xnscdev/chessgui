@@ -203,6 +203,7 @@ void BoardWidgetBackend::findCheckmate() {
     }
   }
   canMove = false;
+  metadata.result = turn ? "0-1" : "1-0";
   QMessageBox box;
   box.setText("Game Over");
   box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
@@ -219,6 +220,26 @@ BoardWidget::BoardWidget(QWidget *parent)
 
 void BoardWidget::reset() {
   backend->reset();
+}
+
+QString BoardWidget::metadataPGN() const {
+  QString str;
+  str += "[Event \"" + backend->metadata.event + "\"]\n";
+  str += "[Site \"" + backend->metadata.site + "\"]\n";
+
+  str += "[Date \"";
+  str += QString::number(backend->metadata.date.year()).rightJustified(4, '0');
+  str += '.';
+  str += QString::number(backend->metadata.date.month()).rightJustified(2, '0');
+  str += '.';
+  str += QString::number(backend->metadata.date.day()).rightJustified(2, '0');
+  str += "\"]\n";
+
+  str += "[Round \"" + backend->metadata.round + "\"]\n";
+  str += "[White \"" + backend->metadata.whitePlayer + "\"]\n";
+  str += "[Black \"" + backend->metadata.blackPlayer + "\"]\n";
+  str += "[Result \"" + backend->metadata.result + "\"]\n\n";
+  return str;
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {

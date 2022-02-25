@@ -7,6 +7,8 @@ class MovesListWidget : public QTableWidget {
   Q_OBJECT
 
 public:
+  QString pgnMoveString;
+
   explicit MovesListWidget(QWidget *parent = nullptr);
   void clearMoves();
 
