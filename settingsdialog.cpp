@@ -1,4 +1,5 @@
 #include "settingsdialog.h"
+#include "editenginedialog.h"
 #include "ui_SettingsDialog.h"
 #include <QMessageBox>
 #include <QSettings>
@@ -46,6 +47,7 @@ void SettingsDialog::saveSettings() {
   settings.setValue("timeControl", ui->timeControlBox->isChecked());
   settings.setValue("baseTime", ui->baseTimeBox->value());
   settings.setValue("moveBonus", ui->moveBonusBox->value());
+  settings.setValue("evalEngine", ui->evalEngineBox->currentIndex());
 
   settings.beginWriteArray("engines");
   for (int i = 0, j = 0; i < ui->enginesList->rowCount(); i++) {
@@ -88,9 +90,23 @@ void SettingsDialog::loadSettings() {
   }
   settings.endArray();
 
-  updatePlayerComboBoxes();
+  ui->whitePlayer->clear();
+  ui->whitePlayer->addItem("Human Player 1");
+  ui->whitePlayer->addItem("Human Player 2");
+  ui->blackPlayer->clear();
+  ui->blackPlayer->addItem("Human Player 1");
+  ui->blackPlayer->addItem("Human Player 2");
+  ui->evalEngineBox->clear();
+
+  for (int i = 0; i < ui->enginesList->rowCount(); i++) {
+    QString engine = ui->enginesList->item(i, 0)->text();
+    ui->whitePlayer->addItem(engine);
+    ui->blackPlayer->addItem(engine);
+    ui->evalEngineBox->addItem(engine);
+  }
   ui->whitePlayer->setCurrentIndex(settings.value("whitePlayer", 0).toInt());
   ui->blackPlayer->setCurrentIndex(settings.value("blackPlayer", 1).toInt());
+  ui->evalEngineBox->setCurrentIndex(settings.value("evalEngine").toInt());
 }
 
 void SettingsDialog::updatePlayerComboBoxes() {
@@ -100,11 +116,13 @@ void SettingsDialog::updatePlayerComboBoxes() {
   ui->blackPlayer->clear();
   ui->blackPlayer->addItem("Human Player 1");
   ui->blackPlayer->addItem("Human Player 2");
+  ui->evalEngineBox->clear();
 
   for (int i = 0; i < ui->enginesList->rowCount(); i++) {
     QString engine = ui->enginesList->item(i, 0)->text() + " (" + ui->enginesList->item(i, 1)->text() + ")";
     ui->whitePlayer->addItem(engine);
     ui->blackPlayer->addItem(engine);
+    ui->evalEngineBox->addItem(engine);
   }
 }
 
@@ -123,17 +141,52 @@ void SettingsDialog::showHelp() {
 }
 
 void SettingsDialog::addEngine() {
+  EditEngineDialog dialog(this);
+  if (dialog.exec() != QDialog::Accepted)
+    return;
+  QString name = dialog.engineName().trimmed();
+  QString command = dialog.engineCommand().trimmed();
+  if (name.isEmpty() || command.isEmpty())
+    return;
   int row = ui->enginesList->rowCount();
+  for (int i = 0; i < row; i++) {
+    if (ui->enginesList->item(i, 0)->text() == name) {
+      QMessageBox box(this);
+      box.setIcon(QMessageBox::Critical);
+      box.setText("Invalid engine name");
+      box.setInformativeText("An engine already exists with the name \"" + name + "\"");
+      box.exec();
+      return;
+    }
+  }
   ui->enginesList->insertRow(row);
-  ui->enginesList->edit(ui->enginesList->model()->index(row, 0));
+  ui->enginesList->setItem(row, 0, new QTableWidgetItem(name));
+  ui->enginesList->setItem(row, 1, new QTableWidgetItem(command));
+  ui->whitePlayer->addItem(name);
+  ui->blackPlayer->addItem(name);
+  ui->evalEngineBox->addItem(name);
 }
 
 void SettingsDialog::removeEngine() {
+  QList<int> rows;
   for (auto &range : ui->enginesList->selectedRanges()) {
     for (int i = range.topRow(); i <= range.bottomRow(); i++)
-      ui->enginesList->removeRow(range.topRow());
+      rows.append(i);
   }
-  updatePlayerComboBoxes();
-  ui->whitePlayer->setCurrentIndex(0);
-  ui->blackPlayer->setCurrentIndex(1);
+  std::sort(rows.begin(), rows.end());
+  if (rows.contains(ui->whitePlayer->currentIndex() - 2))
+    ui->whitePlayer->setCurrentIndex(0);
+  if (rows.contains(ui->blackPlayer->currentIndex() - 2))
+    ui->blackPlayer->setCurrentIndex(1);
+  if (rows.contains(ui->evalEngineBox->currentIndex()))
+    ui->evalEngineBox->setCurrentIndex(-1);
+  QListIterator<int> it(rows);
+  it.toBack();
+  while (it.hasPrevious()) {
+    int row = it.previous();
+    ui->enginesList->removeRow(row);
+    ui->whitePlayer->removeItem(row + 2);
+    ui->blackPlayer->removeItem(row + 2);
+    ui->evalEngineBox->removeItem(row);
+  }
 }
