@@ -1,5 +1,6 @@
 #include "chessgui.h"
 #include "ui_chessgui.h"
+#include "gamesetupdialog.h"
 #include <QFileDialog>
 
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {
@@ -27,10 +28,17 @@ void ChessGUI::saveGame() {
   contents += ui->movesList->pgnMoveString + '\n';
 
   QString path = QFileDialog::getSaveFileName(this, "Save game", QDir::homePath(), "Portable Game Notation (.pgn)");
+  if (path.isEmpty())
+    return;
   QFile file(path);
   file.open(QIODevice::WriteOnly);
   file.write(contents.toUtf8());
   file.close();
+}
+
+void ChessGUI::setupGame() {
+  GameSetupDialog dialog(this);
+  dialog.exec();
 }
 
 void ChessGUI::updateSelectedAfterMove() {

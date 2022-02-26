@@ -16,6 +16,8 @@ MovesListWidget::MovesListWidget(QWidget *parent) : QTableWidget(parent), moveNu
 void MovesListWidget::clearMoves() {
   clear();
   setRowCount(1);
+  clearSelection();
+  selectionModel()->select(model()->index(0, 0), QItemSelectionModel::Select);
   moveNumber = 0;
   turn = true;
   pgnMoveString = "1. ";

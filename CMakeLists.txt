@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         main.cpp
         chessgui.cpp chessgui.h chessgui.ui
         promotiondialog.cpp promotiondialog.h promotiondialog.ui
+        gamesetupdialog.cpp gamesetupdialog.h gamesetupdialog.ui
         aspectratiowidget.cpp aspectratiowidget.h
         boardwidget.cpp boardwidget.h
         piece.cpp piece.h

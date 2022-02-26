@@ -80,10 +80,10 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionSave_as"/>
+    <addaction name="actionSetup"/>
    </widget>
    <addaction name="menuGame"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
    <property name="text">
     <string>New</string>
@@ -92,6 +92,11 @@
   <action name="actionSave_as">
    <property name="text">
     <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionSetup">
+   <property name="text">
+    <string>Game setup</string>
    </property>
   </action>
  </widget>
@@ -142,9 +147,26 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSetup</sender>
+   <signal>triggered()</signal>
+   <receiver>ChessGUI</receiver>
+   <slot>setupGame()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newGame()</slot>
   <slot>saveGame()</slot>
+  <slot>setupGame()</slot>
  </slots>
 </ui>

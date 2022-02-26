@@ -19,6 +19,7 @@ public:
 public slots:
   void newGame();
   void saveGame();
+  void setupGame();
 
 private:
   Ui::ChessGUI *ui;
