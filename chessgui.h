@@ -22,6 +22,14 @@ public slots:
 
 private:
   Ui::ChessGUI *ui;
+
+private slots:
+  void updateSelectedAfterMove();
+  void moveListSelected();
+  void toFirstMove();
+  void toPrevMove();
+  void toNextMove();
+  void toLastMove();
 };
 
 #endif

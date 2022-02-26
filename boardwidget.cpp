@@ -31,6 +31,39 @@ void BoardWidgetBackend::reset() {
   update();
 }
 
+void BoardWidgetBackend::toFirstMove() {
+  if (history.size() > 1)
+    historyMove = 0;
+  update();
+}
+
+void BoardWidgetBackend::toPrevMove() {
+  if (historyMove > 0)
+    historyMove--;
+  else if (historyMove == -1)
+    historyMove = static_cast<int>(history.size()) - 2;
+  update();
+}
+
+void BoardWidgetBackend::toNextMove() {
+  if (historyMove != -1 && ++historyMove == history.size() - 1)
+    historyMove = -1;
+  update();
+}
+
+void BoardWidgetBackend::toLastMove() {
+  historyMove = -1;
+  update();
+}
+
+void BoardWidgetBackend::toMove(int move) {
+  if (move >= history.size() - 1)
+    historyMove = -1;
+  else
+    historyMove = move;
+  update();
+}
+
 void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   int xStep = width() / game.size.width();
@@ -271,31 +304,13 @@ QString BoardWidget::metadataPGN() const {
   return str;
 }
 
+int BoardWidget::historyMove() {
+  int move = backend->historyMove;
+  if (move == -1)
+    move = static_cast<int>(backend->history.size()) - 1;
+  return move;
+}
+
 void BoardWidget::receiveMoveMade(const QString &move) {
   emit moveMade(move);
-}
-
-void BoardWidgetBackend::toFirstMove() {
-  if (history.size() > 1)
-    historyMove = 0;
-  update();
-}
-
-void BoardWidgetBackend::toPrevMove() {
-  if (historyMove > 0)
-    historyMove--;
-  else if (historyMove == -1)
-    historyMove = static_cast<int>(history.size()) - 2;
-  update();
-}
-
-void BoardWidgetBackend::toNextMove() {
-  if (historyMove != -1 && ++historyMove == history.size() - 1)
-    historyMove = -1;
-  update();
-}
-
-void BoardWidgetBackend::toLastMove() {
-  historyMove = -1;
-  update();
 }

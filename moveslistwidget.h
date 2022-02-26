@@ -11,6 +11,7 @@ public:
 
   explicit MovesListWidget(QWidget *parent = nullptr);
   void clearMoves();
+  void updateSelected(int move);
 
 public slots:
   void recordMove(const QString &move);

@@ -6,6 +6,7 @@
 #include "piece.h"
 #include <QDate>
 #include <QHash>
+#include <QTableWidgetItem>
 
 struct GameHistoryPosition {
   GamePosition pos;
@@ -27,6 +28,8 @@ class BoardWidgetBackend : public QWidget {
 
 public:
   GameMetadata metadata;
+  QList<GameHistoryPosition> history;
+  int historyMove;
 
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
@@ -34,6 +37,7 @@ public:
   void toPrevMove();
   void toNextMove();
   void toLastMove();
+  void toMove(int move);
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -49,7 +53,6 @@ private:
   bool orientation = false;
   bool canMove;
   bool turn;
-  int historyMove;
   QPoint highlightedTile;
   QPoint moveFromTile;
   QPoint prevSelectedPiece;
@@ -57,7 +60,6 @@ private:
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
-  QList<GameHistoryPosition> history;
 
   QPoint selectedTile(QPoint pos);
   void drawPosition(QPainter &painter, GamePosition &position);
@@ -78,6 +80,7 @@ public:
   explicit BoardWidget(QWidget *parent = nullptr);
   void reset() { backend->reset(); }
   QString metadataPGN() const;
+  int historyMove();
 
 private:
   BoardWidgetBackend *backend;
@@ -93,6 +96,7 @@ public slots:
   void toPrevMove() { backend->toPrevMove(); }
   void toNextMove() { backend->toNextMove(); }
   void toLastMove() { backend->toLastMove(); }
+  void toMove(int move) { backend->toMove(move); }
 };
 
 #endif
