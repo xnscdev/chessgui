@@ -3,6 +3,7 @@
 
 #include "aspectratiowidget.h"
 #include "gamevariant.h"
+#include "moveinputmethod.h"
 #include "piece.h"
 #include <QDate>
 #include <QHash>
@@ -30,6 +31,7 @@ public:
   GameMetadata metadata;
   QList<GameHistoryPosition> history;
   int historyMove;
+  QString uciMoveString;
 
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
@@ -60,6 +62,8 @@ private:
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
+  MoveInputMethod *whiteInputMethod;
+  MoveInputMethod *blackInputMethod;
 
   QPoint selectedTile(QPoint pos);
   void drawPosition(QPainter &painter, GamePosition &position);
@@ -67,7 +71,7 @@ private:
   bool doMove(QPoint to);
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
-  void findCheckmate();
+  bool findCheckmate();
 
 signals:
   void moveMade(const QString &move);

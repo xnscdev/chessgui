@@ -10,6 +10,7 @@ class GameVariant {
 public:
   QSize size;
   QMap<QString, Piece *> pieces;
+  QMap<QString, QString> notation;
 
   virtual void setup(GamePosition &position) = 0;
   virtual QString moveName(GamePosition &position, const Move &move, QPoint ep, Piece *promote, bool white) const;
@@ -22,7 +23,6 @@ public:
   QString moveName(GamePosition &position, const Move &move, QPoint ep, Piece *promote, bool white) const override;
 
 private:
-  QMap<QString, QString> notation;
   Piece *rookPiece;
   Piece *knightPiece;
   Piece *bishopPiece;

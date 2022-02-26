@@ -28,7 +28,9 @@ set(PROJECT_SOURCES
         gamevariant.cpp gamevariant.h
         assets.cpp assets.h
         position.cpp position.h
-        moveslistwidget.cpp moveslistwidget.h)
+        moveslistwidget.cpp moveslistwidget.h
+        uciengine.cpp uciengine.h
+        moveinputmethod.cpp moveinputmethod.h)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(chessgui

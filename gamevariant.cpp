@@ -6,7 +6,7 @@ QSettings *pieceConfig;
 
 QString GameVariant::moveName(GamePosition &position, const Move &move, QPoint ep, Piece *promote, bool white) const {
   if (promote)
-    return move + " " + promote->name;
+    return move + notation[promote->name];
   else
     return move;
 }
@@ -21,11 +21,11 @@ DefaultGameVariant::DefaultGameVariant()
   pieces["queen"] = queenPiece;
   pieces["king"] = kingPiece;
   pieces["pawn"] = pawnPiece;
-  notation["rook"] = "R";
-  notation["knight"] = "N";
-  notation["bishop"] = "B";
-  notation["queen"] = "Q";
-  notation["king"] = "K";
+  notation["rook"] = "r";
+  notation["knight"] = "n";
+  notation["bishop"] = "b";
+  notation["queen"] = "q";
+  notation["king"] = "k";
 }
 
 void DefaultGameVariant::setup(GamePosition &position) {
@@ -64,7 +64,7 @@ QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, Q
       return "O-O";
   }
   if (piece != pawnPiece)
-    str += notation[piece->name];
+    str += notation[piece->name].toUpper();
   for (int y = 0; y < size.height(); y++) {
     bool found = false;
     for (int x = 0; x < size.width(); x++) {
@@ -100,7 +100,7 @@ QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, Q
 
   if (promote) {
     str += "=";
-    str += notation[promote->name];
+    str += notation[promote->name].toUpper();
   }
 
   GamePosition posCopy = positionAfterMove(position, move);

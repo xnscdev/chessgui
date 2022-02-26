@@ -6,6 +6,8 @@
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   reset();
+  whiteInputMethod = new MoveInputMethod;
+  blackInputMethod = new MoveInputMethod;
 }
 
 void BoardWidgetBackend::reset() {
@@ -20,6 +22,7 @@ void BoardWidgetBackend::reset() {
   ep.setX(-1);
   availableTiles.clear();
   availableMovesMap.clear();
+  uciMoveString.clear();
 
   position.clear();
   position.resize(game.size.height());
@@ -207,7 +210,9 @@ bool BoardWidgetBackend::doMove(QPoint to) {
     Piece *promotionPiece = nullptr;
     if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
       promotionPiece = promotePiece(fromPiece.piece);
-    emit moveMade(game.moveName(position, move, ep, promotionPiece, turn));
+    QString moveName = game.moveName(position, move, ep, promotionPiece, turn);
+    uciMoveString += ' ' + moveName;
+    emit moveMade(moveName);
 
     toPiece.piece = fromPiece.piece;
     toPiece.white = fromPiece.white;
@@ -238,7 +243,13 @@ bool BoardWidgetBackend::doMove(QPoint to) {
     history.append({position, move});
     moveFromTile = move.from;
     update();
-    findCheckmate();
+
+    if (!findCheckmate()) {
+      if (turn)
+        whiteInputMethod->start(uciMoveString);
+      else
+        blackInputMethod->start(uciMoveString);
+    }
     return true;
   }
   return false;
@@ -254,7 +265,7 @@ Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
   return dialog.selectedPiece;
 }
 
-void BoardWidgetBackend::findCheckmate() {
+bool BoardWidgetBackend::findCheckmate() {
   for (int y = 0; y < game.size.height(); y++) {
     for (int x = 0; x < game.size.width(); x++) {
       GamePiece &piece = position[y][x];
@@ -264,7 +275,7 @@ void BoardWidgetBackend::findCheckmate() {
         while (it.hasNext()) {
           it.next();
           if (legalPosition(positionAfterMove(position, it.value()), turn))
-            return;
+            return false;
         }
       }
     }
@@ -275,6 +286,7 @@ void BoardWidgetBackend::findCheckmate() {
   box.setText("Game Over");
   box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
   box.exec();
+  return true;
 }
 
 BoardWidget::BoardWidget(QWidget *parent)
