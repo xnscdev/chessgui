@@ -5,6 +5,10 @@
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {
   ui->setupUi(this);
   connect(ui->boardWidget, &BoardWidget::moveMade, ui->movesList, &MovesListWidget::recordMove);
+  connect(ui->firstMoveButton, &QPushButton::clicked, ui->boardWidget, &BoardWidget::toFirstMove);
+  connect(ui->prevMoveButton, &QPushButton::clicked, ui->boardWidget, &BoardWidget::toPrevMove);
+  connect(ui->nextMoveButton, &QPushButton::clicked, ui->boardWidget, &BoardWidget::toNextMove);
+  connect(ui->lastMoveButton, &QPushButton::clicked, ui->boardWidget, &BoardWidget::toLastMove);
 }
 
 ChessGUI::~ChessGUI() {

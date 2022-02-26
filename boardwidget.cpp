@@ -29,6 +29,30 @@ void BoardWidgetBackend::reset() {
   update();
 }
 
+void BoardWidgetBackend::toFirstMove() {
+  historyMove = 0;
+  update();
+}
+
+void BoardWidgetBackend::toPrevMove() {
+  if (historyMove > 0)
+    historyMove--;
+  else if (historyMove == -1)
+    historyMove = history.size() - 1;
+  update();
+}
+
+void BoardWidgetBackend::toNextMove() {
+  if (++historyMove == history.size())
+    historyMove = -1;
+  update();
+}
+
+void BoardWidgetBackend::toLastMove() {
+  historyMove = -1;
+  update();
+}
+
 void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   int xStep = width() / game.size.width();
@@ -230,10 +254,6 @@ BoardWidget::BoardWidget(QWidget *parent)
                         static_cast<float>(loadedVariant->size.height()), parent) {
   backend = dynamic_cast<BoardWidgetBackend *>(widget());
   connect(backend, &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
-}
-
-void BoardWidget::reset() {
-  backend->reset();
 }
 
 QString BoardWidget::metadataPGN() const {

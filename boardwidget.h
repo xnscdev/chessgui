@@ -30,6 +30,10 @@ public:
 
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
+  void toFirstMove();
+  void toPrevMove();
+  void toNextMove();
+  void toLastMove();
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -71,7 +75,7 @@ class BoardWidget : public AspectRatioWidget {
 
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
-  void reset();
+  void reset() { backend->reset(); }
   QString metadataPGN() const;
 
 private:
@@ -82,6 +86,12 @@ signals:
 
 private slots:
   void receiveMoveMade(const QString &move);
+
+public slots:
+  void toFirstMove() { backend->toFirstMove(); }
+  void toPrevMove() { backend->toPrevMove(); }
+  void toNextMove() { backend->toNextMove(); }
+  void toLastMove() { backend->toLastMove(); }
 };
 
 #endif
