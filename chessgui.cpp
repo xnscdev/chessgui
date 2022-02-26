@@ -1,6 +1,5 @@
 #include "chessgui.h"
 #include "ui_chessgui.h"
-#include "gamesetupdialog.h"
 #include "settingsdialog.h"
 #include <QFileDialog>
 
@@ -35,11 +34,6 @@ void ChessGUI::saveGame() {
   file.open(QIODevice::WriteOnly);
   file.write(contents.toUtf8());
   file.close();
-}
-
-void ChessGUI::setupGame() {
-  GameSetupDialog dialog(this);
-  dialog.exec();
 }
 
 void ChessGUI::openSettings() {

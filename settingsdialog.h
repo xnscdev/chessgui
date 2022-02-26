@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QSettings>
-#include <QListWidgetItem>
+#include <QTableWidgetItem>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -24,7 +24,7 @@ private:
   QSettings settings;
 
   void loadSettings();
-  QListWidgetItem *addEngineCommand(const QString &cmd);
+  void updatePlayerComboBoxes();
 
 private slots:
   void selectionChanged();

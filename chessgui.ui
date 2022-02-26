@@ -80,7 +80,6 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionSave_as"/>
-    <addaction name="actionSetup"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
    </widget>
@@ -143,22 +142,6 @@
    <signal>triggered()</signal>
    <receiver>ChessGUI</receiver>
    <slot>saveGame()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>399</x>
-     <y>299</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>actionSetup</sender>
-   <signal>triggered()</signal>
-   <receiver>ChessGUI</receiver>
-   <slot>setupGame()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

@@ -13,6 +13,7 @@ BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : gam
 void BoardWidgetBackend::reset() {
   canMove = true;
   turn = true;
+  pgnResult = "*";
   historyMove = -1;
   history.clear();
   highlightedTile.setX(-1);
@@ -281,7 +282,7 @@ bool BoardWidgetBackend::findCheckmate() {
     }
   }
   canMove = false;
-  metadata.result = turn ? "0-1" : "1-0";
+  pgnResult = turn ? "0-1" : "1-0";
   QMessageBox box(this);
   box.setText("Game Over");
   box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
@@ -297,23 +298,41 @@ BoardWidget::BoardWidget(QWidget *parent)
 }
 
 QString BoardWidget::metadataPGN() const {
+  QSettings settings;
   QString str;
-  str += "[Event \"" + backend->metadata.event + "\"]\n";
-  str += "[Site \"" + backend->metadata.site + "\"]\n";
+  str += "[Event \"" + settings.value("event", "?").toString() + "\"]\n";
+  str += "[Site \"" + settings.value("site", "?").toString() + "\"]\n";
 
+  QDate date = settings.value("date", QDate::currentDate()).toDate();
   str += "[Date \"";
-  str += QString::number(backend->metadata.date.year()).rightJustified(4, '0');
+  str += QString::number(date.year()).rightJustified(4, '0');
   str += '.';
-  str += QString::number(backend->metadata.date.month()).rightJustified(2, '0');
+  str += QString::number(date.month()).rightJustified(2, '0');
   str += '.';
-  str += QString::number(backend->metadata.date.day()).rightJustified(2, '0');
+  str += QString::number(date.day()).rightJustified(2, '0');
   str += "\"]\n";
 
-  str += "[Round \"" + backend->metadata.round + "\"]\n";
-  str += "[White \"" + backend->metadata.whitePlayer + "\"]\n";
-  str += "[Black \"" + backend->metadata.blackPlayer + "\"]\n";
-  str += "[Result \"" + backend->metadata.result + "\"]\n\n";
+  str += "[Round \"" + settings.value("round", "?").toString() + "\"]\n";
+  str += "[White \"" + playerName(settings, "whitePlayer", 0) + "\"]\n";
+  str += "[Black \"" + playerName(settings, "blackPlayer", 1) + "\"]\n";
+  str += "[Result \"" + backend->pgnResult + "\"]\n\n";
   return str;
+}
+
+QString BoardWidget::playerName(QSettings &settings, const QString &key, int defaultValue) {
+  int index = settings.value(key, defaultValue).toInt();
+  switch (index) {
+  case 0:
+    return settings.value("humanPlayer1Name", "?").toString();
+  case 1:
+    return settings.value("humanPlayer2Name", "?").toString();
+  default:
+    settings.beginReadArray("engines");
+    settings.setArrayIndex(index - 2);
+    QString name = settings.value("name", "?").toString();
+    settings.endArray();
+    return name;
+  }
 }
 
 int BoardWidget::historyMove() {

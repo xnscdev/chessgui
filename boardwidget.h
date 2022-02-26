@@ -14,21 +14,11 @@ struct GameHistoryPosition {
   Move prevMove;
 };
 
-struct GameMetadata {
-  QString event = "?";
-  QString site = "?";
-  QDate date = QDate::currentDate();
-  QString round = "?";
-  QString whitePlayer = "?";
-  QString blackPlayer = "?";
-  QString result = "*";
-};
-
 class BoardWidgetBackend : public QWidget {
   Q_OBJECT
 
 public:
-  GameMetadata metadata;
+  QString pgnResult;
   QList<GameHistoryPosition> history;
   int historyMove;
   QString uciMoveString;
@@ -88,6 +78,8 @@ public:
 
 private:
   BoardWidgetBackend *backend;
+
+  static QString playerName(QSettings &settings, const QString &key, int defaultValue);
 
 signals:
   void moveMade(const QString &move);
