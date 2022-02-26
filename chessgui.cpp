@@ -1,6 +1,6 @@
 #include "chessgui.h"
-#include "ui_chessgui.h"
 #include "settingsdialog.h"
+#include "ui_chessgui.h"
 #include <QFileDialog>
 
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {

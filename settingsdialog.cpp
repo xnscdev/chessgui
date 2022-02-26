@@ -22,7 +22,6 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::Se
   connect(ui->timeControlBox, &QCheckBox::clicked, ui->moveBonusBox, &QLineEdit::setEnabled);
 
   loadSettings();
-  updatePlayerComboBoxes();
 }
 
 SettingsDialog::~SettingsDialog() {
@@ -49,10 +48,13 @@ void SettingsDialog::saveSettings() {
   settings.setValue("moveBonus", ui->moveBonusBox->value());
 
   settings.beginWriteArray("engines");
-  for (int i = 0; i < ui->enginesList->rowCount(); i++) {
-    settings.setArrayIndex(i);
+  for (int i = 0, j = 0; i < ui->enginesList->rowCount(); i++) {
+    settings.setArrayIndex(j);
+    if (ui->enginesList->item(i, 0)->text().isEmpty())
+      continue;
     settings.setValue("name", ui->enginesList->item(i, 0)->text());
     settings.setValue("command", ui->enginesList->item(i, 1)->text());
+    j++;
   }
   settings.endArray();
 }
@@ -60,10 +62,8 @@ void SettingsDialog::saveSettings() {
 void SettingsDialog::loadSettings() {
   ui->humanPlayer1Name->setText(settings.value("humanPlayer1Name").toString());
   ui->humanPlayer2Name->setText(settings.value("humanPlayer2Name").toString());
-  ui->whitePlayer->setCurrentIndex(settings.value("whitePlayer", 0).toInt());
   ui->whiteELOEnabled->setChecked(settings.value("whiteELOEnabled").toBool());
   ui->whiteELO->setValue(settings.value("whiteELO", 1800).toInt());
-  ui->blackPlayer->setCurrentIndex(settings.value("blackPlayer", 1).toInt());
   ui->blackELOEnabled->setChecked(settings.value("blackELOEnabled").toBool());
   ui->blackELO->setValue(settings.value("blackELO", 1800).toInt());
   ui->eventBox->setText(settings.value("event").toString());
@@ -87,6 +87,10 @@ void SettingsDialog::loadSettings() {
     ui->enginesList->setItem(i, 1, new QTableWidgetItem(settings.value("command").toString()));
   }
   settings.endArray();
+
+  updatePlayerComboBoxes();
+  ui->whitePlayer->setCurrentIndex(settings.value("whitePlayer", 0).toInt());
+  ui->blackPlayer->setCurrentIndex(settings.value("blackPlayer", 1).toInt());
 }
 
 void SettingsDialog::updatePlayerComboBoxes() {
@@ -98,7 +102,7 @@ void SettingsDialog::updatePlayerComboBoxes() {
   ui->blackPlayer->addItem("Human Player 2");
 
   for (int i = 0; i < ui->enginesList->rowCount(); i++) {
-    QString engine = ui->enginesList->item(i, 0)->text();
+    QString engine = ui->enginesList->item(i, 0)->text() + " (" + ui->enginesList->item(i, 1)->text() + ")";
     ui->whitePlayer->addItem(engine);
     ui->blackPlayer->addItem(engine);
   }
@@ -125,10 +129,11 @@ void SettingsDialog::addEngine() {
 }
 
 void SettingsDialog::removeEngine() {
-  if (ui->enginesList->selectedRanges().size() == 1) {
-    QTableWidgetSelectionRange range = ui->enginesList->selectedRanges()[0];
-    if (range.rowCount() != 1)
-      return;
-    ui->enginesList->removeRow(range.topRow());
+  for (auto &range : ui->enginesList->selectedRanges()) {
+    for (int i = range.topRow(); i <= range.bottomRow(); i++)
+      ui->enginesList->removeRow(range.topRow());
   }
+  updatePlayerComboBoxes();
+  ui->whitePlayer->setCurrentIndex(0);
+  ui->blackPlayer->setCurrentIndex(1);
 }
