@@ -282,7 +282,7 @@ bool BoardWidgetBackend::findCheckmate() {
   }
   canMove = false;
   metadata.result = turn ? "0-1" : "1-0";
-  QMessageBox box;
+  QMessageBox box(this);
   box.setText("Game Over");
   box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
   box.exec();

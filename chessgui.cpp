@@ -1,6 +1,7 @@
 #include "chessgui.h"
 #include "ui_chessgui.h"
 #include "gamesetupdialog.h"
+#include "settingsdialog.h"
 #include <QFileDialog>
 
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {
@@ -39,6 +40,12 @@ void ChessGUI::saveGame() {
 void ChessGUI::setupGame() {
   GameSetupDialog dialog(this);
   dialog.exec();
+}
+
+void ChessGUI::openSettings() {
+  SettingsDialog dialog(this);
+  if (dialog.exec() == QDialog::Accepted)
+    dialog.saveSettings();
 }
 
 void ChessGUI::updateSelectedAfterMove() {

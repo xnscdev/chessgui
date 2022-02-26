@@ -81,6 +81,8 @@
     <addaction name="actionNew"/>
     <addaction name="actionSave_as"/>
     <addaction name="actionSetup"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings"/>
    </widget>
    <addaction name="menuGame"/>
   </widget>
@@ -97,6 +99,11 @@
   <action name="actionSetup">
    <property name="text">
     <string>Game setup</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
    </property>
   </action>
  </widget>
@@ -163,10 +170,27 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSettings</sender>
+   <signal>triggered()</signal>
+   <receiver>ChessGUI</receiver>
+   <slot>openSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>newGame()</slot>
   <slot>saveGame()</slot>
   <slot>setupGame()</slot>
+  <slot>openSettings()</slot>
  </slots>
 </ui>

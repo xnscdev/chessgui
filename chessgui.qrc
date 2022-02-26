@@ -1,0 +1,8 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>gui/icon-help.svg</file>
+        <file>gui/icon-add.svg</file>
+        <file>gui/icon-remove.svg</file>
+    </qresource>
+</RCC>

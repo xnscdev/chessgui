@@ -15,14 +15,16 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 include(GNUInstallDirs)
 
+add_compile_definitions(PROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
 add_compile_definitions(CONF_DIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}/chessgui")
 add_compile_definitions(DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/chessgui")
 
 set(PROJECT_SOURCES
-        main.cpp
+        main.cpp chessgui.qrc
         chessgui.cpp chessgui.h chessgui.ui
         promotiondialog.cpp promotiondialog.h promotiondialog.ui
         gamesetupdialog.cpp gamesetupdialog.h gamesetupdialog.ui
+        settingsdialog.cpp settingsdialog.h settingsdialog.ui
         aspectratiowidget.cpp aspectratiowidget.h
         boardwidget.cpp boardwidget.h
         piece.cpp piece.h
