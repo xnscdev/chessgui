@@ -14,7 +14,7 @@ class UCIMoveInputMethod : public MoveInputMethod {
   Q_OBJECT
 
 public:
-  explicit UCIMoveInputMethod(const QString &path) : engine(path) {}
+  explicit UCIMoveInputMethod(const QString &path, bool white) : engine(path, white) {}
   void start(const QString &moves) override;
 
 signals:

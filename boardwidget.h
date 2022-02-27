@@ -65,7 +65,7 @@ private:
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
   bool findCheckmate();
-  MoveInputMethod *createMoveInputMethod(const QString &key);
+  MoveInputMethod *createMoveInputMethod(const QString &key, bool white);
 
 signals:
   void moveMade(const QString &move);

@@ -37,8 +37,10 @@ void SettingsDialog::saveSettings() {
   settings.setValue("humanPlayer1Name", ui->humanPlayer1Name->text());
   settings.setValue("humanPlayer2Name", ui->humanPlayer2Name->text());
   settings.setValue("whitePlayer", ui->whitePlayer->currentIndex());
+  settings.setValue("whiteELOEnabled", ui->whiteELOEnabled->isChecked());
   settings.setValue("whiteELO", ui->whiteELO->value());
   settings.setValue("blackPlayer", ui->blackPlayer->currentIndex());
+  settings.setValue("blackELOEnabled", ui->blackELOEnabled->isChecked());
   settings.setValue("blackELO", ui->blackELO->value());
   settings.setValue("event", ui->eventBox->text());
   settings.setValue("site", ui->siteBox->text());

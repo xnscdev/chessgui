@@ -14,7 +14,7 @@ class UCIEngine : public QObject {
   Q_OBJECT
 
 public:
-  explicit UCIEngine(const QString &path);
+  explicit UCIEngine(const QString &path, bool white);
   void sendCommand(const QString &cmd);
   void waitResponse(const QString &response);
   QString waitMove();

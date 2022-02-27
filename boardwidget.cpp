@@ -6,8 +6,8 @@
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   reset();
-  whiteInputMethod = createMoveInputMethod("whitePlayer");
-  blackInputMethod = createMoveInputMethod("blackPlayer");
+  whiteInputMethod = createMoveInputMethod("whitePlayer", true);
+  blackInputMethod = createMoveInputMethod("blackPlayer", false);
 }
 
 void BoardWidgetBackend::reset() {
@@ -209,8 +209,10 @@ void BoardWidgetBackend::doMove(Move &move) {
   GamePiece &fromPiece = position[move.from.y()][move.from.x()];
   GamePiece &toPiece = position[move.to.y()][move.to.x()];
   Piece *promotionPiece = nullptr;
-  if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
+  if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes) {
     promotionPiece = promotePiece(fromPiece.piece);
+    move.promote = game.notation[promotionPiece->name];
+  }
   QString moveName = game.moveName(position, move, ep, promotionPiece, turn);
   uciMoveString += ' ' + move;
   emit moveMade(moveName);
@@ -298,7 +300,7 @@ bool BoardWidgetBackend::findCheckmate() {
   return true;
 }
 
-MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key) {
+MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key, bool white) {
   int index = settings.value(key).toInt();
   if (index < 2)
     return new MoveInputMethod;
@@ -306,7 +308,7 @@ MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key) {
   settings.setArrayIndex(index - 2);
   QString cmd = settings.value("command").toString();
   settings.endArray();
-  auto *method = new UCIMoveInputMethod(cmd);
+  auto *method = new UCIMoveInputMethod(cmd, white);
   connect(method, &UCIMoveInputMethod::engineMoved, this, &BoardWidgetBackend::receiveEngineMove);
   return method;
 }

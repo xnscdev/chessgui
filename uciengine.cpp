@@ -1,8 +1,9 @@
 #include "uciengine.h"
 #include <QRegularExpression>
 #include <QSignalSpy>
+#include <QSettings>
 
-UCIEngine::UCIEngine(const QString &path) : process(new QProcess(this)) {
+UCIEngine::UCIEngine(const QString &path, bool white) : process(new QProcess(this)) {
   QStringList args = path.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
   QString cmd = args.first();
   args.removeFirst();
@@ -11,6 +12,15 @@ UCIEngine::UCIEngine(const QString &path) : process(new QProcess(this)) {
 
   sendCommand("uci");
   waitResponse("uciok");
+
+  QSettings settings;
+  QString side = white ? "whiteELO" : "blackELO";
+  if (settings.value(side + "Enabled").toBool()) {
+    QString elo = settings.value(side, 1800).toString();
+    sendCommand("setoption name UCI_LimitStrength value true");
+    sendCommand("setoption name UCI_Elo value " + elo);
+  }
+
   sendCommand("ucinewgame");
   sendCommand("isready");
   waitResponse("readyok");

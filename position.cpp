@@ -126,6 +126,7 @@ Move::operator QString() const {
   str += QString::number(from.y() + 1);
   str += static_cast<QChar>('a' + to.x());
   str += QString::number(to.y() + 1);
+  str += promote;
   return str;
 }
 
