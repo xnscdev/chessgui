@@ -97,6 +97,7 @@ public:
   [[nodiscard]] bool reversed() const { return backend->orientation; }
   [[nodiscard]] QString metadataPGN() const;
   [[nodiscard]] int historyMove() const;
+  [[nodiscard]] QList<GameHistoryPosition> history() { return backend->history; }
   QString formattedTime(bool white) const;
   void closeEngines() { backend->closeEngines(); }
 

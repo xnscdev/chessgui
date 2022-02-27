@@ -20,11 +20,6 @@ BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : gam
 }
 
 void BoardWidgetBackend::reset() {
-  delete whiteInputMethod;
-  delete blackInputMethod;
-  whiteInputMethod = createMoveInputMethod("whitePlayer", true);
-  blackInputMethod = createMoveInputMethod("blackPlayer", false);
-
   gameRunning = true;
   turn = true;
   pgnResult = "*";
@@ -51,6 +46,10 @@ void BoardWidgetBackend::reset() {
 }
 
 void BoardWidgetBackend::newGame() {
+  delete whiteInputMethod;
+  delete blackInputMethod;
+  whiteInputMethod = createMoveInputMethod("whitePlayer", true);
+  blackInputMethod = createMoveInputMethod("blackPlayer", false);
   reset();
   whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());
   blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
