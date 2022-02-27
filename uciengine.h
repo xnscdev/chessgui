@@ -10,11 +10,10 @@ public:
   [[nodiscard]] UCIException *clone() const override { return new UCIException(*this); }
 };
 
-class UCIEngine : public QObject {
-  Q_OBJECT
-
+class UCIEngine {
 public:
   explicit UCIEngine(const QString &path, bool white);
+  ~UCIEngine() { process->kill(); delete process; }
   void sendCommand(const QString &cmd);
   void waitResponse(const QString &response);
   QString waitMove();

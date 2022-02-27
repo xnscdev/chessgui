@@ -26,6 +26,7 @@ private:
 
   void updatePlayerNames();
   void updateTimers();
+  void closeEvent(QCloseEvent *event) override;
 
 private slots:
   void updateSelectedAfterMove();

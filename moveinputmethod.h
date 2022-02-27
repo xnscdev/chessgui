@@ -8,7 +8,8 @@ class MoveInputMethod : public QObject {
 
 public:
   virtual void start(const QString &moves) {}
-  virtual bool manual() const { return true; }
+  virtual void reset(bool useELO, int elo) {}
+  [[nodiscard]] virtual bool manual() const { return true; }
 };
 
 class UCIMoveInputMethod : public MoveInputMethod {
@@ -17,7 +18,11 @@ class UCIMoveInputMethod : public MoveInputMethod {
 public:
   explicit UCIMoveInputMethod(const QString &path, bool white) : engine(path, white) {}
   void start(const QString &moves) override;
-  bool manual() const override { return false; }
+  void reset(bool useELO, int elo) override;
+  [[nodiscard]] bool manual() const override { return false; }
+
+private:
+  void uciError() const;
 
 signals:
   void engineMoved(const QString &move);

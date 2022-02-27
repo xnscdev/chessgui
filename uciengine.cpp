@@ -3,7 +3,7 @@
 #include <QSignalSpy>
 #include <QSettings>
 
-UCIEngine::UCIEngine(const QString &path, bool white) : process(new QProcess(this)) {
+UCIEngine::UCIEngine(const QString &path, bool white) : process(new QProcess) {
   QStringList args = path.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
   QString cmd = args.first();
   args.removeFirst();
@@ -27,6 +27,7 @@ UCIEngine::UCIEngine(const QString &path, bool white) : process(new QProcess(thi
 }
 
 void UCIEngine::sendCommand(const QString &cmd) {
+  qDebug() << ">>" << cmd;
   process->write((cmd + '\n').toUtf8());
 }
 

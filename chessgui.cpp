@@ -36,11 +36,15 @@ void ChessGUI::updateTimers() {
   ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(ui->boardWidget->reversed()));
 }
 
+void ChessGUI::closeEvent(QCloseEvent *event) {
+  ui->boardWidget->closeEngines();
+}
+
 void ChessGUI::newGame() {
-  ui->boardWidget->reset();
-  ui->movesList->clearMoves();
   updatePlayerNames();
   updateTimers();
+  ui->boardWidget->reset();
+  ui->movesList->clearMoves();
 }
 
 void ChessGUI::saveGame() {

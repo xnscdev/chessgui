@@ -40,6 +40,7 @@ public:
   void toNextMove();
   void toLastMove();
   void toMove(int move);
+  void closeEngines();
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -97,6 +98,7 @@ public:
   [[nodiscard]] QString metadataPGN() const;
   [[nodiscard]] int historyMove() const;
   QString formattedTime(bool white) const;
+  void closeEngines() { backend->closeEngines(); }
 
 private:
   BoardWidgetBackend *backend;

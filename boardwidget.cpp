@@ -6,8 +6,6 @@
 #include <QtConcurrent>
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
-  whiteInputMethod = createMoveInputMethod("whitePlayer", true);
-  blackInputMethod = createMoveInputMethod("blackPlayer", false);
   reset();
   gameRunning = false;
   if (settings.value("timeControl").toBool()) {
@@ -22,6 +20,11 @@ BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : gam
 }
 
 void BoardWidgetBackend::reset() {
+  delete whiteInputMethod;
+  delete blackInputMethod;
+  whiteInputMethod = createMoveInputMethod("whitePlayer", true);
+  blackInputMethod = createMoveInputMethod("blackPlayer", false);
+
   gameRunning = true;
   turn = true;
   pgnResult = "*";
@@ -49,6 +52,8 @@ void BoardWidgetBackend::reset() {
 
 void BoardWidgetBackend::newGame() {
   reset();
+  whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());
+  blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
   whiteInputMethod->start(uciMoveString);
 }
 
@@ -273,12 +278,12 @@ void BoardWidgetBackend::doMove(Move &move) {
   moveFromTile = move.from;
   update();
 
-  if (!findCheckmate()) {
-    if (turn)
-      whiteInputMethod->start(uciMoveString);
-    else
-      blackInputMethod->start(uciMoveString);
-  }
+  if (findCheckmate())
+    return;
+  if (turn)
+    whiteInputMethod->start(uciMoveString);
+  else
+    blackInputMethod->start(uciMoveString);
 }
 
 bool BoardWidgetBackend::tryMove(QPoint to) {
@@ -336,7 +341,7 @@ MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key, b
   QString cmd = settings.value("command").toString();
   settings.endArray();
   auto *method = new UCIMoveInputMethod(cmd, white);
-  connect(method, &UCIMoveInputMethod::engineMoved, this, &BoardWidgetBackend::receiveEngineMove);
+  connect(method, &UCIMoveInputMethod::engineMoved, this, &BoardWidgetBackend::receiveEngineMove, Qt::QueuedConnection);
   return method;
 }
 
@@ -364,6 +369,11 @@ void BoardWidgetBackend::whiteTimerTick() {
 
 void BoardWidgetBackend::blackTimerTick() {
   blackTime -= timerFreq;
+}
+
+void BoardWidgetBackend::closeEngines() {
+  delete whiteInputMethod;
+  delete blackInputMethod;
 }
 
 BoardWidget::BoardWidget(QWidget *parent)
