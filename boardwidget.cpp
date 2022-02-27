@@ -6,8 +6,8 @@
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   reset();
-  whiteInputMethod = new MoveInputMethod;
-  blackInputMethod = new MoveInputMethod;
+  whiteInputMethod = createMoveInputMethod("whitePlayer");
+  blackInputMethod = createMoveInputMethod("blackPlayer");
 }
 
 void BoardWidgetBackend::reset() {
@@ -18,6 +18,7 @@ void BoardWidgetBackend::reset() {
   history.clear();
   highlightedTile.setX(-1);
   moveFromTile.setX(-1);
+  moveToTile.setX(-1);
   prevSelectedPiece.setX(-1);
   selectedPiece.setX(-1);
   ep.setX(-1);
@@ -76,20 +77,23 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
 
   QPoint toHighlight;
   QPoint fromHighlight;
+  QPoint altHighlight;
   if (historyMove == -1) {
-    toHighlight = highlightedTile;
+    toHighlight = moveToTile;
     fromHighlight = moveFromTile;
+    altHighlight = highlightedTile;
   }
   else {
     toHighlight = history[historyMove].prevMove.to;
     fromHighlight = history[historyMove].prevMove.from;
+    altHighlight = {-1, 0};
   }
 
   for (int x = 0; x < game.size.width(); x++) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
       QPoint point(x, game.size.height() - y - 1);
-      if (point == toHighlight || point == fromHighlight)
+      if (point == toHighlight || point == fromHighlight || point == altHighlight)
         color = highlightColor;
       else if ((x + y) & 1)
         color = darkColor;
@@ -131,10 +135,8 @@ void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       }
       else if (tile != prevSelectedPiece) {
         if (movablePieceAt(prevSelectedPiece)) {
-          if (doMove(tile)) {
-            highlightedTile = selectedPiece;
-            prevSelectedPiece.setX(-1);
-          }
+          if (tryMove(tile))
+            ;
           else if (movablePieceAt(selectedPiece)) {
             highlightedTile = selectedPiece;
             prevSelectedPiece = selectedPiece;
@@ -144,8 +146,8 @@ void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       }
     }
     else {
-      if (movablePieceAt(selectedPiece) && doMove(tile))
-        highlightedTile = tile;
+      if (movablePieceAt(selectedPiece) && tryMove(tile))
+        ;
       else {
         availableTiles.clear();
         availableMovesMap.clear();
@@ -203,54 +205,60 @@ void BoardWidgetBackend::showAvailableMoves() {
   update();
 }
 
-bool BoardWidgetBackend::doMove(QPoint to) {
+void BoardWidgetBackend::doMove(Move &move) {
+  GamePiece &fromPiece = position[move.from.y()][move.from.x()];
+  GamePiece &toPiece = position[move.to.y()][move.to.x()];
+  Piece *promotionPiece = nullptr;
+  if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
+    promotionPiece = promotePiece(fromPiece.piece);
+  QString moveName = game.moveName(position, move, ep, promotionPiece, turn);
+  uciMoveString += ' ' + move;
+  emit moveMade(moveName);
+
+  toPiece.piece = fromPiece.piece;
+  toPiece.white = fromPiece.white;
+  toPiece.moved = true;
+  fromPiece.piece = nullptr;
+  if (promotionPiece)
+    toPiece.piece = promotionPiece;
+  if (move.capture.x() != -1)
+    position[move.capture.y()][move.capture.x()].piece = nullptr;
+  if (move.castle.x() != -1) {
+    GamePiece &newPos = position[move.ep.y()][move.ep.x()];
+    GamePiece &oldPos = position[move.castle.y()][move.castle.x()];
+    newPos.piece = oldPos.piece;
+    newPos.white = oldPos.white;
+    newPos.moved = true;
+    oldPos.piece = nullptr;
+  }
+  else {
+    if (move.ep.x() != -1)
+      ep = move.ep;
+    else
+      ep.setX(-1);
+  }
+
+  turn = !turn;
+  availableTiles.clear();
+  availableMovesMap.clear();
+  history.append({position, move});
+  moveFromTile = move.from;
+  update();
+
+  if (!findCheckmate()) {
+    if (turn)
+      whiteInputMethod->start(uciMoveString);
+    else
+      blackInputMethod->start(uciMoveString);
+  }
+}
+
+bool BoardWidgetBackend::tryMove(QPoint to) {
   if (availableMovesMap.contains(to)) {
+    highlightedTile = selectedPiece;
+    prevSelectedPiece.setX(-1);
     Move move = availableMovesMap[to];
-    GamePiece &fromPiece = position[move.from.y()][move.from.x()];
-    GamePiece &toPiece = position[move.to.y()][move.to.x()];
-    Piece *promotionPiece = nullptr;
-    if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes)
-      promotionPiece = promotePiece(fromPiece.piece);
-    QString moveName = game.moveName(position, move, ep, promotionPiece, turn);
-    uciMoveString += ' ' + moveName;
-    emit moveMade(moveName);
-
-    toPiece.piece = fromPiece.piece;
-    toPiece.white = fromPiece.white;
-    toPiece.moved = true;
-    fromPiece.piece = nullptr;
-    if (promotionPiece)
-      toPiece.piece = promotionPiece;
-    if (move.capture.x() != -1)
-      position[move.capture.y()][move.capture.x()].piece = nullptr;
-    if (move.castle.x() != -1) {
-      GamePiece &newPos = position[move.ep.y()][move.ep.x()];
-      GamePiece &oldPos = position[move.castle.y()][move.castle.x()];
-      newPos.piece = oldPos.piece;
-      newPos.white = oldPos.white;
-      newPos.moved = true;
-      oldPos.piece = nullptr;
-    }
-    else {
-      if (move.ep.x() != -1)
-        ep = move.ep;
-      else
-        ep.setX(-1);
-    }
-
-    turn = !turn;
-    availableTiles.clear();
-    availableMovesMap.clear();
-    history.append({position, move});
-    moveFromTile = move.from;
-    update();
-
-    if (!findCheckmate()) {
-      if (turn)
-        whiteInputMethod->start(uciMoveString);
-      else
-        blackInputMethod->start(uciMoveString);
-    }
+    doMove(move);
     return true;
   }
   return false;
@@ -290,33 +298,39 @@ bool BoardWidgetBackend::findCheckmate() {
   return true;
 }
 
+MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key) {
+  int index = settings.value(key).toInt();
+  if (index < 2)
+    return new MoveInputMethod;
+  settings.beginReadArray("engines");
+  settings.setArrayIndex(index - 2);
+  QString cmd = settings.value("command").toString();
+  settings.endArray();
+  auto *method = new UCIMoveInputMethod(cmd);
+  connect(method, &UCIMoveInputMethod::engineMoved, this, &BoardWidgetBackend::receiveEngineMove);
+  return method;
+}
+
+void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
+  QPoint from{moveString[0].toLatin1() - 'a', QString(moveString[1]).toInt() - 1};
+  QPoint to{moveString[2].toLatin1() - 'a', QString(moveString[3]).toInt() - 1};
+  QHash<QPoint, Move> moves = availableMoves(position, ep, from);
+  QMutableHashIterator<QPoint, Move> it(moves);
+  while (it.hasNext()) {
+    it.next();
+    if (it.value().to == to) {
+      moveToTile = it.value().to;
+      doMove(it.value());
+      break;
+    }
+  }
+}
+
 BoardWidget::BoardWidget(QWidget *parent)
     : AspectRatioWidget(new BoardWidgetBackend(*loadedVariant), static_cast<float>(loadedVariant->size.width()),
                         static_cast<float>(loadedVariant->size.height()), parent) {
   backend = dynamic_cast<BoardWidgetBackend *>(widget());
   connect(backend, &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
-}
-
-QString BoardWidget::metadataPGN() const {
-  QSettings settings;
-  QString str;
-  str += "[Event \"" + settings.value("event", "?").toString() + "\"]\n";
-  str += "[Site \"" + settings.value("site", "?").toString() + "\"]\n";
-
-  QDate date = settings.value("date", QDate::currentDate()).toDate();
-  str += "[Date \"";
-  str += QString::number(date.year()).rightJustified(4, '0');
-  str += '.';
-  str += QString::number(date.month()).rightJustified(2, '0');
-  str += '.';
-  str += QString::number(date.day()).rightJustified(2, '0');
-  str += "\"]\n";
-
-  str += "[Round \"" + settings.value("round", "?").toString() + "\"]\n";
-  str += "[White \"" + playerName(settings, "whitePlayer", 0) + "\"]\n";
-  str += "[Black \"" + playerName(settings, "blackPlayer", 1) + "\"]\n";
-  str += "[Result \"" + backend->pgnResult + "\"]\n\n";
-  return str;
 }
 
 QString BoardWidget::playerName(QSettings &settings, const QString &key, int defaultValue) {
@@ -335,11 +349,38 @@ QString BoardWidget::playerName(QSettings &settings, const QString &key, int def
   }
 }
 
-int BoardWidget::historyMove() {
+QString BoardWidget::metadataPGN() const {
+  QSettings settings;
+  QString str;
+  str += "[Event \"" + fillPGNTag(settings, "event") + "\"]\n";
+  str += "[Site \"" + fillPGNTag(settings, "site") + "\"]\n";
+
+  QDate date = settings.value("date", QDate::currentDate()).toDate();
+  str += "[Date \"";
+  str += QString::number(date.year()).rightJustified(4, '0');
+  str += '.';
+  str += QString::number(date.month()).rightJustified(2, '0');
+  str += '.';
+  str += QString::number(date.day()).rightJustified(2, '0');
+  str += "\"]\n";
+
+  str += "[Round \"" + fillPGNTag(settings, "round") + "\"]\n";
+  str += "[White \"" + playerName(settings, "whitePlayer", 0) + "\"]\n";
+  str += "[Black \"" + playerName(settings, "blackPlayer", 1) + "\"]\n";
+  str += "[Result \"" + backend->pgnResult + "\"]\n\n";
+  return str;
+}
+
+int BoardWidget::historyMove() const {
   int move = backend->historyMove;
   if (move == -1)
     move = static_cast<int>(backend->history.size()) - 1;
   return move;
+}
+
+QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) const {
+  QString value = settings.value(key).toString();
+  return value.isEmpty() ? "?" : value;
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {

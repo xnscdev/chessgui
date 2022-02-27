@@ -18,6 +18,7 @@ class BoardWidgetBackend : public QWidget {
   Q_OBJECT
 
 public:
+  bool orientation = false;
   QString pgnResult;
   QList<GameHistoryPosition> history;
   int historyMove;
@@ -40,13 +41,14 @@ private:
   constexpr static const QColor highlightColor{255, 232, 124};
   constexpr static const QColor lightColor{236, 207, 169};
   constexpr static const QColor darkColor{206, 144, 89};
+  QSettings settings;
   GameVariant &game;
   GamePosition position;
-  bool orientation = false;
   bool canMove;
   bool turn;
   QPoint highlightedTile;
   QPoint moveFromTile;
+  QPoint moveToTile;
   QPoint prevSelectedPiece;
   QPoint selectedPiece;
   QPoint ep;
@@ -58,13 +60,18 @@ private:
   QPoint selectedTile(QPoint pos);
   void drawPosition(QPainter &painter, GamePosition &position);
   void showAvailableMoves();
-  bool doMove(QPoint to);
+  void doMove(Move &move);
+  bool tryMove(QPoint to);
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
   bool findCheckmate();
+  MoveInputMethod *createMoveInputMethod(const QString &key);
 
 signals:
   void moveMade(const QString &move);
+
+private slots:
+  void receiveEngineMove(const QString &moveString);
 };
 
 class BoardWidget : public AspectRatioWidget {
@@ -73,13 +80,15 @@ class BoardWidget : public AspectRatioWidget {
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
   void reset() { backend->reset(); }
-  QString metadataPGN() const;
-  int historyMove();
+  static QString playerName(QSettings &settings, const QString &key, int defaultValue);
+  [[nodiscard]] bool reversed() const { return backend->orientation; }
+  [[nodiscard]] QString metadataPGN() const;
+  [[nodiscard]] int historyMove() const;
 
 private:
   BoardWidgetBackend *backend;
 
-  static QString playerName(QSettings &settings, const QString &key, int defaultValue);
+  QString fillPGNTag(const QSettings &settings, const QString &key) const;
 
 signals:
   void moveMade(const QString &move);

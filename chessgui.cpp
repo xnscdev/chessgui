@@ -12,10 +12,23 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
   connect(ui->nextMoveButton, &QPushButton::clicked, this, &ChessGUI::toNextMove);
   connect(ui->lastMoveButton, &QPushButton::clicked, this, &ChessGUI::toLastMove);
   connect(ui->movesList, &QTableWidget::itemSelectionChanged, this, &ChessGUI::moveListSelected);
+  updatePlayerNames();
 }
 
 ChessGUI::~ChessGUI() {
   delete ui;
+}
+
+void ChessGUI::updatePlayerNames() {
+  QSettings settings;
+  if (ui->boardWidget->reversed()) {
+    ui->playerLabel->setText(BoardWidget::playerName(settings, "blackPlayer", 1));
+    ui->opponentLabel->setText(BoardWidget::playerName(settings, "whitePlayer", 0));
+  }
+  else {
+    ui->playerLabel->setText(BoardWidget::playerName(settings, "whitePlayer", 0));
+    ui->opponentLabel->setText(BoardWidget::playerName(settings, "blackPlayer", 1));
+  }
 }
 
 void ChessGUI::newGame() {
@@ -25,7 +38,10 @@ void ChessGUI::newGame() {
 
 void ChessGUI::saveGame() {
   QString contents = ui->boardWidget->metadataPGN();
-  contents += ui->movesList->pgnMoveString + '\n';
+  QString moves = ui->movesList->pgnMoveString;
+  if (moves.contains('#'))
+    moves = moves.mid(0, moves.indexOf("#") + 1);
+  contents += moves + '\n';
 
   QString path = QFileDialog::getSaveFileName(this, "Save game", QDir::homePath(), "Portable Game Notation (.pgn)");
   if (path.isEmpty())
