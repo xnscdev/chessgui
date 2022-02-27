@@ -277,7 +277,7 @@ void BoardWidgetBackend::doMove(Move &move) {
   moveFromTile = move.from;
   update();
 
-  if (findCheckmate())
+  if (findGameEnd())
     return;
   if (turn)
     whiteInputMethod->start(uciMoveString);
@@ -307,7 +307,7 @@ Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
   return dialog.selectedPiece;
 }
 
-bool BoardWidgetBackend::findCheckmate() {
+bool BoardWidgetBackend::findGameEnd() {
   for (int y = 0; y < game.size.height(); y++) {
     for (int x = 0; x < game.size.width(); x++) {
       GamePiece &piece = position[y][x];
@@ -322,11 +322,18 @@ bool BoardWidgetBackend::findCheckmate() {
       }
     }
   }
-  gameRunning = false;
-  pgnResult = turn ? "0-1" : "1-0";
   QMessageBox box(this);
+  box.setIcon(QMessageBox::Information);
   box.setText("Game Over");
-  box.setInformativeText(QString(turn ? "Black" : "White") + " wins");
+  gameRunning = false;
+  if (legalPosition(position, turn)) {
+    pgnResult = "1/2-1/2";
+    box.setInformativeText("Draw by stalemate");
+  }
+  else {
+    pgnResult = turn ? "0-1" : "1-0";
+    box.setInformativeText(turn ? "Black wins" : "White wins");
+  }
   box.exec();
   return true;
 }

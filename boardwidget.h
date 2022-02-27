@@ -75,7 +75,7 @@ private:
   bool tryMove(QPoint to);
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
-  bool findCheckmate();
+  bool findGameEnd();
   MoveInputMethod *createMoveInputMethod(const QString &key, bool white);
 
 signals:
