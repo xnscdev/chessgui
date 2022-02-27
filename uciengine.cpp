@@ -27,7 +27,6 @@ UCIEngine::UCIEngine(const QString &path, bool white) : process(new QProcess(thi
 }
 
 void UCIEngine::sendCommand(const QString &cmd) {
-  qDebug() << ">>" << cmd;
   process->write((cmd + '\n').toUtf8());
 }
 
@@ -38,8 +37,6 @@ void UCIEngine::waitResponse(const QString &response) {
       throw UCIException();
     output = QString::fromUtf8(process->readAllStandardOutput()).split('\n');
     output.removeAll({});
-    for (const QString &str : output)
-      qDebug() << str;
     if (output.last() == response)
       break;
   }
@@ -48,15 +45,12 @@ void UCIEngine::waitResponse(const QString &response) {
 QString UCIEngine::waitMove() {
   while (true) {
     QSignalSpy spy(process, &QProcess::readyReadStandardOutput);
-    if (!spy.wait())
+    if (!spy.wait(30000))
       throw UCIException();
     output = QString::fromUtf8(process->readAllStandardOutput()).split('\n');
     output.removeAll({});
-    for (const QString &str : output)
-      qDebug() << str;
     if (output.last().startsWith("bestmove")) {
       QString moveString = output.last().split(' ')[1];
-      qDebug() << "! Move:" << moveString;
       return moveString;
     }
   }
