@@ -33,10 +33,12 @@ void UCIEngine::sendCommand(const QString &cmd) {
 void UCIEngine::waitResponse(const QString &response) {
   while (true) {
     QSignalSpy spy(process, &QProcess::readyReadStandardOutput);
-    if (!spy.wait())
+    if (!spy.wait(15000))
       throw UCIException();
     output = QString::fromUtf8(process->readAllStandardOutput()).split('\n');
     output.removeAll({});
+    for (const QString &str : output)
+      qDebug() << str;
     if (output.last() == response)
       break;
   }
@@ -49,6 +51,8 @@ QString UCIEngine::waitMove() {
       throw UCIException();
     output = QString::fromUtf8(process->readAllStandardOutput()).split('\n');
     output.removeAll({});
+    for (const QString &str : output)
+      qDebug() << str;
     if (output.last().startsWith("bestmove")) {
       QString moveString = output.last().split(' ')[1];
       return moveString;

@@ -12,7 +12,6 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
   connect(ui->nextMoveButton, &QPushButton::clicked, this, &ChessGUI::toNextMove);
   connect(ui->lastMoveButton, &QPushButton::clicked, this, &ChessGUI::toLastMove);
   connect(ui->movesList, &QTableWidget::itemSelectionChanged, this, &ChessGUI::moveListSelected);
-  updatePlayerNames();
 }
 
 ChessGUI::~ChessGUI() {
@@ -31,9 +30,17 @@ void ChessGUI::updatePlayerNames() {
   }
 }
 
+void ChessGUI::updateTimers() {
+  QSettings settings;
+  ui->playerTimeLabel->setText(ui->boardWidget->formattedTime(!ui->boardWidget->reversed()));
+  ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(ui->boardWidget->reversed()));
+}
+
 void ChessGUI::newGame() {
   ui->boardWidget->reset();
   ui->movesList->clearMoves();
+  updatePlayerNames();
+  updateTimers();
 }
 
 void ChessGUI::saveGame() {

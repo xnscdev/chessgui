@@ -8,6 +8,7 @@
 #include <QDate>
 #include <QHash>
 #include <QTableWidgetItem>
+#include <QTimer>
 
 struct GameHistoryPosition {
   GamePosition pos;
@@ -23,9 +24,17 @@ public:
   QList<GameHistoryPosition> history;
   int historyMove;
   QString uciMoveString;
+  QTimer *whiteTimer;
+  QTimer *blackTimer;
+  int whiteTimerDelay = 0;
+  int blackTimerDelay = 0;
+  int whiteTime;
+  int blackTime;
+  int moveBonus;
 
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
+  void newGame();
   void toFirstMove();
   void toPrevMove();
   void toNextMove();
@@ -41,10 +50,11 @@ private:
   constexpr static const QColor highlightColor{255, 232, 124};
   constexpr static const QColor lightColor{236, 207, 169};
   constexpr static const QColor darkColor{206, 144, 89};
+  static const int timerFreq = 50;
   QSettings settings;
   GameVariant &game;
   GamePosition position;
-  bool canMove;
+  bool gameRunning;
   bool turn;
   QPoint highlightedTile;
   QPoint moveFromTile;
@@ -72,6 +82,8 @@ signals:
 
 private slots:
   void receiveEngineMove(const QString &moveString);
+  void whiteTimerTick();
+  void blackTimerTick();
 };
 
 class BoardWidget : public AspectRatioWidget {
@@ -79,11 +91,12 @@ class BoardWidget : public AspectRatioWidget {
 
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
-  void reset() { backend->reset(); }
+  void reset() { backend->newGame(); }
   static QString playerName(QSettings &settings, const QString &key, int defaultValue);
   [[nodiscard]] bool reversed() const { return backend->orientation; }
   [[nodiscard]] QString metadataPGN() const;
   [[nodiscard]] int historyMove() const;
+  QString formattedTime(bool white) const;
 
 private:
   BoardWidgetBackend *backend;

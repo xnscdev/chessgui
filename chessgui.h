@@ -25,6 +25,7 @@ private:
   Ui::ChessGUI *ui;
 
   void updatePlayerNames();
+  void updateTimers();
 
 private slots:
   void updateSelectedAfterMove();

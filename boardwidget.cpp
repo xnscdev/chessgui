@@ -3,15 +3,26 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QtConcurrent>
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
-  reset();
   whiteInputMethod = createMoveInputMethod("whitePlayer", true);
   blackInputMethod = createMoveInputMethod("blackPlayer", false);
+  reset();
+  gameRunning = false;
+  if (settings.value("timeControl").toBool()) {
+    whiteTimer = new QTimer(this);
+    blackTimer = new QTimer(this);
+    connect(whiteTimer, &QTimer::timeout, this, &BoardWidgetBackend::whiteTimerTick);
+    connect(blackTimer, &QTimer::timeout, this, &BoardWidgetBackend::blackTimerTick);
+    whiteTime = settings.value("baseTime").toInt() * 60000;
+    blackTime = whiteTime;
+    moveBonus = settings.value("moveBonus").toInt() * 1000;
+  }
 }
 
 void BoardWidgetBackend::reset() {
-  canMove = true;
+  gameRunning = true;
   turn = true;
   pgnResult = "*";
   historyMove = -1;
@@ -34,6 +45,11 @@ void BoardWidgetBackend::reset() {
   game.setup(position);
   history.append({position, {{-1, 0}, {-1, 0}}});
   update();
+}
+
+void BoardWidgetBackend::newGame() {
+  reset();
+  whiteInputMethod->start(uciMoveString);
 }
 
 void BoardWidgetBackend::toFirstMove() {
@@ -112,7 +128,7 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
 }
 
 void BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
-  if (!canMove || historyMove != -1)
+  if (!gameRunning || historyMove != -1)
     return;
   if (event->button() == Qt::LeftButton) {
     selectedPiece = selectedTile(event->pos());
@@ -124,7 +140,7 @@ void BoardWidgetBackend::mousePressEvent(QMouseEvent *event) {
 }
 
 void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
-  if (!canMove || historyMove != -1)
+  if (!gameRunning || historyMove != -1)
     return;
   if (event->button() == Qt::LeftButton) {
     QPoint tile = selectedTile(event->pos());
@@ -209,7 +225,17 @@ void BoardWidgetBackend::doMove(Move &move) {
   GamePiece &fromPiece = position[move.from.y()][move.from.x()];
   GamePiece &toPiece = position[move.to.y()][move.to.x()];
   Piece *promotionPiece = nullptr;
-  if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes) {
+  if (!move.promote.isEmpty()) {
+    QMapIterator<QString, QString> it(game.notation);
+    while (it.hasNext()) {
+      it.next();
+      if (it.value() == move.promote) {
+        promotionPiece = game.pieces[it.key()];
+        break;
+      }
+    }
+  }
+  else if ((turn ? game.size.height() - move.to.y() : move.to.y() + 1) <= fromPiece.piece->promotes) {
     promotionPiece = promotePiece(fromPiece.piece);
     move.promote = game.notation[promotionPiece->name];
   }
@@ -267,7 +293,8 @@ bool BoardWidgetBackend::tryMove(QPoint to) {
 }
 
 bool BoardWidgetBackend::movablePieceAt(QPoint tile) {
-  return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn;
+  return position[tile.y()][tile.x()].piece && position[tile.y()][tile.x()].white == turn &&
+         (turn ? whiteInputMethod : blackInputMethod)->manual();
 }
 
 Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
@@ -291,7 +318,7 @@ bool BoardWidgetBackend::findCheckmate() {
       }
     }
   }
-  canMove = false;
+  gameRunning = false;
   pgnResult = turn ? "0-1" : "1-0";
   QMessageBox box(this);
   box.setText("Game Over");
@@ -317,15 +344,26 @@ void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
   QPoint from{moveString[0].toLatin1() - 'a', QString(moveString[1]).toInt() - 1};
   QPoint to{moveString[2].toLatin1() - 'a', QString(moveString[3]).toInt() - 1};
   QHash<QPoint, Move> moves = availableMoves(position, ep, from);
-  QMutableHashIterator<QPoint, Move> it(moves);
+  QHashIterator<QPoint, Move> it(moves);
   while (it.hasNext()) {
     it.next();
     if (it.value().to == to) {
-      moveToTile = it.value().to;
-      doMove(it.value());
+      Move move = it.value();
+      if (moveString.length() == 5)
+        move.promote = moveString[4];
+      moveToTile = move.to;
+      doMove(move);
       break;
     }
   }
+}
+
+void BoardWidgetBackend::whiteTimerTick() {
+  whiteTime -= timerFreq;
+}
+
+void BoardWidgetBackend::blackTimerTick() {
+  blackTime -= timerFreq;
 }
 
 BoardWidget::BoardWidget(QWidget *parent)
@@ -383,6 +421,18 @@ int BoardWidget::historyMove() const {
 QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) const {
   QString value = settings.value(key).toString();
   return value.isEmpty() ? "?" : value;
+}
+
+QString BoardWidget::formattedTime(bool white) const {
+  int ms = white ? backend->whiteTime : backend->blackTime;
+  int sec = ms / 1000;
+  ms %= 1000;
+  int min = sec / 60;
+  sec %= 60;
+  int h = min / 60;
+  min %= 60;
+  return QString::number(h).rightJustified(2, '0') + ':' + QString::number(min).rightJustified(2, '0') + ':' +
+         QString::number(sec).rightJustified(2, '0') + '.' + QString::number(ms).rightJustified(3, '0');
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {
