@@ -113,8 +113,10 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
       QPoint point(x, game.size.height() - y - 1);
-      if (point == toHighlight || point == fromHighlight || point == altHighlight)
+      if (point == toHighlight || point == altHighlight)
         color = highlightColor;
+      else if (point == fromHighlight)
+        color = fromHighlightColor;
       else if ((x + y) & 1)
         color = darkColor;
       else
@@ -156,7 +158,7 @@ void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
       else if (tile != prevSelectedPiece) {
         if (movablePieceAt(prevSelectedPiece)) {
           if (tryMove(tile))
-            ;
+            highlightedTile = tile;
           else if (movablePieceAt(selectedPiece)) {
             highlightedTile = selectedPiece;
             prevSelectedPiece = selectedPiece;
@@ -167,7 +169,7 @@ void BoardWidgetBackend::mouseReleaseEvent(QMouseEvent *event) {
     }
     else {
       if (movablePieceAt(selectedPiece) && tryMove(tile))
-        ;
+        highlightedTile = tile;
       else {
         availableTiles.clear();
         availableMovesMap.clear();
@@ -275,6 +277,7 @@ void BoardWidgetBackend::doMove(Move &move) {
   availableMovesMap.clear();
   history.append({position, move});
   moveFromTile = move.from;
+  moveToTile = move.to;
   update();
 
   if (findGameEnd())
@@ -362,7 +365,6 @@ void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
       Move move = it.value();
       if (moveString.length() == 5)
         move.promote = moveString[4];
-      moveToTile = move.to;
       doMove(move);
       break;
     }

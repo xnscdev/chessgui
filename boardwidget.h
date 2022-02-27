@@ -48,6 +48,7 @@ protected:
   void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
+  constexpr static const QColor fromHighlightColor{255, 215, 0};
   constexpr static const QColor highlightColor{255, 232, 124};
   constexpr static const QColor lightColor{236, 207, 169};
   constexpr static const QColor darkColor{206, 144, 89};
@@ -65,8 +66,8 @@ private:
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
-  MoveInputMethod *whiteInputMethod;
-  MoveInputMethod *blackInputMethod;
+  MoveInputMethod *whiteInputMethod = nullptr;
+  MoveInputMethod *blackInputMethod = nullptr;
 
   QPoint selectedTile(QPoint pos);
   void drawPosition(QPainter &painter, GamePosition &position);
