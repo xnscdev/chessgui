@@ -63,31 +63,33 @@ QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, Q
     else
       return "O-O";
   }
-  if (piece != pawnPiece)
+
+  if (piece != pawnPiece) {
     str += notation[piece->name].toUpper();
-  for (int y = 0; y < size.height(); y++) {
-    bool found = false;
-    for (int x = 0; x < size.width(); x++) {
-      if (QPoint(x, y) != move.from && position[y][x].piece == piece && position[y][x].white == white) {
-        QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
-        QMutableHashIterator<QPoint, Move> it(moves);
-        while (it.hasNext()) {
-          it.next();
-          if (it.value().to == move.to && legalPosition(positionAfterMove(position, it.value()), white)) {
-            if (x != move.from.x())
-              str += static_cast<QChar>('a' + move.from.x());
-            else
-              str += QString::number(move.from.y() + 1);
-            found = true;
-            break;
+    for (int y = 0; y < size.height(); y++) {
+      bool found = false;
+      for (int x = 0; x < size.width(); x++) {
+        if (QPoint(x, y) != move.from && position[y][x].piece == piece && position[y][x].white == white) {
+          QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
+          QMutableHashIterator<QPoint, Move> it(moves);
+          while (it.hasNext()) {
+            it.next();
+            if (it.value().to == move.to && legalPosition(positionAfterMove(position, it.value()), white)) {
+              if (x != move.from.x())
+                str += static_cast<QChar>('a' + move.from.x());
+              else
+                str += QString::number(move.from.y() + 1);
+              found = true;
+              break;
+            }
           }
         }
+        if (found)
+          break;
       }
       if (found)
         break;
     }
-    if (found)
-      break;
   }
 
   if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1) {
