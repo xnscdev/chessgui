@@ -34,6 +34,7 @@ void BoardWidgetBackend::reset() {
   availableTiles.clear();
   availableMovesMap.clear();
   uciMoveString.clear();
+  moveOccurrences.clear();
 
   position.clear();
   position.resize(game.size.height());
@@ -319,26 +320,48 @@ bool BoardWidgetBackend::findGameEnd() {
         QHashIterator<QPoint, Move> it(moves);
         while (it.hasNext()) {
           it.next();
-          if (legalPosition(positionAfterMove(position, it.value()), turn))
-            return false;
+          if (legalPosition(positionAfterMove(position, it.value()), turn)) {
+            if (++moveOccurrences[gameState()] >= 3) {
+              endGame("1/2-1/2", "Draw by repetition");
+              return true;
+            }
+            else
+              return false;
+          }
         }
       }
     }
   }
+  if (legalPosition(position, turn))
+    endGame("1/2-1/2", "Draw by stalemate");
+  else
+    endGame(turn ? "0-1" : "1-0", turn ? "Black wins" : "White wins");
+  return true;
+}
+
+void BoardWidgetBackend::endGame(const QString &score, const QString &msg) {
   QMessageBox box(this);
   box.setIcon(QMessageBox::Information);
   box.setText("Game Over");
+  box.setInformativeText(msg);
   gameRunning = false;
-  if (legalPosition(position, turn)) {
-    pgnResult = "1/2-1/2";
-    box.setInformativeText("Draw by stalemate");
-  }
-  else {
-    pgnResult = turn ? "0-1" : "1-0";
-    box.setInformativeText(turn ? "Black wins" : "White wins");
-  }
+  pgnResult = score;
   box.exec();
-  return true;
+}
+
+QString BoardWidgetBackend::gameState() const {
+  QString str;
+  for (int y = 0; y < game.size.height(); y++) {
+    for (int x = 0; x < game.size.width(); x++) {
+      Piece *piece = position[y][x].piece;
+      if (piece)
+        str += game.notation[piece->name];
+      else
+        str += '.';
+    }
+  }
+  str += turn ? 'w' : 'b';
+  return str;
 }
 
 MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key, bool white) {

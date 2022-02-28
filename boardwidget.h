@@ -66,6 +66,7 @@ private:
   QPoint ep;
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
+  QMap<QString, int> moveOccurrences;
   MoveInputMethod *whiteInputMethod = nullptr;
   MoveInputMethod *blackInputMethod = nullptr;
 
@@ -77,6 +78,8 @@ private:
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
   bool findGameEnd();
+  void endGame(const QString &score, const QString &msg);
+  [[nodiscard]] QString gameState() const;
   MoveInputMethod *createMoveInputMethod(const QString &key, bool white);
 
 signals:
@@ -99,13 +102,13 @@ public:
   [[nodiscard]] QString metadataPGN() const;
   [[nodiscard]] int historyMove() const;
   [[nodiscard]] QList<GameHistoryPosition> history() { return backend->history; }
-  QString formattedTime(bool white) const;
+  [[nodiscard]] QString formattedTime(bool white) const;
   void closeEngines() { backend->closeEngines(); }
 
 private:
   BoardWidgetBackend *backend;
 
-  QString fillPGNTag(const QSettings &settings, const QString &key) const;
+  [[nodiscard]] QString fillPGNTag(const QSettings &settings, const QString &key) const;
 
 signals:
   void moveMade(const QString &move);
