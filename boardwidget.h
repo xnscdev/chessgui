@@ -67,6 +67,7 @@ private:
   QList<QPoint> availableTiles;
   QHash<QPoint, Move> availableMovesMap;
   QMap<QString, int> moveOccurrences;
+  int lastIrreversibleMove;
   MoveInputMethod *whiteInputMethod = nullptr;
   MoveInputMethod *blackInputMethod = nullptr;
 

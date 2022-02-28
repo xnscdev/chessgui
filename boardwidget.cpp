@@ -35,6 +35,7 @@ void BoardWidgetBackend::reset() {
   availableMovesMap.clear();
   uciMoveString.clear();
   moveOccurrences.clear();
+  lastIrreversibleMove = 0;
 
   position.clear();
   position.resize(game.size.height());
@@ -248,6 +249,10 @@ void BoardWidgetBackend::doMove(Move &move) {
   }
   QString moveName = game.moveName(position, move, ep, promotionPiece, turn);
   uciMoveString += ' ' + move;
+  if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1 || fromPiece.piece->name == "pawn")
+    lastIrreversibleMove = 0;
+  else
+    lastIrreversibleMove++;
   emit moveMade(moveName);
 
   toPiece.piece = fromPiece.piece;
@@ -321,12 +326,13 @@ bool BoardWidgetBackend::findGameEnd() {
         while (it.hasNext()) {
           it.next();
           if (legalPosition(positionAfterMove(position, it.value()), turn)) {
-            if (++moveOccurrences[gameState()] >= 3) {
+            if (++moveOccurrences[gameState()] >= 3)
               endGame("1/2-1/2", "Draw by repetition");
-              return true;
-            }
+            else if (lastIrreversibleMove >= 100)
+              endGame("1/2-1/2", "Draw by 50-move rule");
             else
               return false;
+            return true;
           }
         }
       }
