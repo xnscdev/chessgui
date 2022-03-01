@@ -89,6 +89,10 @@ void UCIEngine::evalReady() {
           int cp = line[i + 1].toInt();
           if (!evalWhite)
             cp = -cp;
+          if (cp < -1000)
+            cp = -1000;
+          if (cp > 1000)
+            cp = 1000;
           emit evalBarUpdate(cp, QString::number(static_cast<float>(cp) / 100.0f, 'f', 2));
         }
         else if (line[i] == "mate") {

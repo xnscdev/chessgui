@@ -49,6 +49,7 @@ private:
   constexpr static const QColor lightColor{236, 207, 169};
   constexpr static const QColor darkColor{206, 144, 89};
   static const int timerFreq = 8;
+  QMap<QString, int> gameEndScores{{"1-0", 1000}, {"0-1", -1000}, {"1/2-1/2", 0}};
   QSettings settings;
   GameVariant &game;
   GamePosition position;
