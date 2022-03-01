@@ -1,14 +1,15 @@
 #include "moveinputmethod.h"
 #include <QMessageBox>
 
-void UCIMoveInputMethod::start(const QString &moves, int whiteTime, int blackTime) {
+void UCIMoveInputMethod::start(const QString &moves, int whiteTime, int blackTime, int moveBonus) {
   if (!whiteTime)
     whiteTime = 600000;
   if (!blackTime)
     blackTime = 600000;
   try {
     engine.sendCommand("position startpos moves" + moves);
-    engine.sendCommand(QStringLiteral("go wtime %1 btime %2").arg(whiteTime).arg( blackTime));
+    engine.sendCommand(
+        QStringLiteral("go wtime %1 btime %2 winc %3 binc %3").arg(whiteTime).arg(blackTime).arg(moveBonus));
     emit engineMoved(engine.waitMove());
   }
   catch (UCIException &) {

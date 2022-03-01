@@ -50,6 +50,7 @@ void SettingsDialog::saveSettings() {
   settings.setValue("baseTime", ui->baseTimeBox->value());
   settings.setValue("moveBonus", ui->moveBonusBox->value());
   settings.setValue("evalEngine", ui->evalEngineBox->currentIndex());
+  settings.setValue("engineDepth", ui->engineDepthBox->value());
 
   settings.beginWriteArray("engines");
   for (int i = 0, j = 0; i < ui->enginesList->rowCount(); i++) {
@@ -77,6 +78,7 @@ void SettingsDialog::loadSettings() {
   ui->timeControlBox->setChecked(settings.value("timeControl").toBool());
   ui->baseTimeBox->setValue(settings.value("baseTime", 5).toInt());
   ui->moveBonusBox->setValue(settings.value("moveBonus").toInt());
+  ui->engineDepthBox->setValue(settings.value("engineDepth", 25).toInt());
 
   ui->whiteELO->setEnabled(ui->whiteELOEnabled->isChecked());
   ui->blackELO->setEnabled(ui->blackELOEnabled->isChecked());

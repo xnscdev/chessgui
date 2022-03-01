@@ -5,6 +5,7 @@
 #include "gamevariant.h"
 #include "moveinputmethod.h"
 #include "piece.h"
+#include "uciengine.h"
 #include <QDate>
 #include <QHash>
 #include <QTableWidgetItem>
@@ -65,6 +66,7 @@ private:
   int lastIrreversibleMove;
   MoveInputMethod *whiteInputMethod = nullptr;
   MoveInputMethod *blackInputMethod = nullptr;
+  UCIEngine *evalEngine = nullptr;
   QTimer *whiteTimer;
   QTimer *blackTimer;
   int whiteTime;
@@ -82,14 +84,17 @@ private:
   void endGame(const QString &score, const QString &msg);
   [[nodiscard]] QString gameState() const;
   MoveInputMethod *createMoveInputMethod(const QString &key, bool white);
+  UCIEngine *createEvalEngine();
 
 signals:
   void moveMade(const QString &move);
   void whiteTimerTicked(int time);
   void blackTimerTicked(int time);
+  void evalBarUpdate(int cp, const QString &label);
 
 private slots:
   void receiveEngineMove(const QString &moveString);
+  void receiveEvalBarUpdate(int cp, const QString &label) { emit evalBarUpdate(cp, label); }
 };
 
 class BoardWidget : public AspectRatioWidget {
@@ -115,11 +120,13 @@ signals:
   void moveMade(const QString &move);
   void whiteTimerTicked(const QString &time);
   void blackTimerTicked(const QString &time);
+  void evalBarUpdate(int cp, const QString &label);
 
 private slots:
-  void receiveMoveMade(const QString &move);
-  void receiveWhiteTimerTick(int time);
-  void receiveBlackTimerTick(int time);
+  void receiveMoveMade(const QString &move) { emit moveMade(move); };
+  void receiveWhiteTimerTick(int time) { emit whiteTimerTicked(formattedTime(time)); };
+  void receiveBlackTimerTick(int time) { emit blackTimerTicked(formattedTime(time)); }
+  void receiveEvalBarUpdate(int cp, const QString &label) { emit evalBarUpdate(cp, label); }
 
 public slots:
   void toFirstMove() { backend->toFirstMove(); }

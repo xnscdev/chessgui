@@ -9,6 +9,7 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
   connect(ui->boardWidget, &BoardWidget::moveMade, this, &ChessGUI::updateSelectedAfterMove);
   connect(ui->boardWidget, &BoardWidget::whiteTimerTicked, this, &ChessGUI::updateWhiteTimer);
   connect(ui->boardWidget, &BoardWidget::blackTimerTicked, this, &ChessGUI::updateBlackTimer);
+  connect(ui->boardWidget, &BoardWidget::evalBarUpdate, this, &ChessGUI::updateEvalBar);
   connect(ui->firstMoveButton, &QPushButton::clicked, this, &ChessGUI::toFirstMove);
   connect(ui->prevMoveButton, &QPushButton::clicked, this, &ChessGUI::toPrevMove);
   connect(ui->nextMoveButton, &QPushButton::clicked, this, &ChessGUI::toNextMove);
@@ -119,4 +120,9 @@ void ChessGUI::updateBlackTimer(const QString &time) {
     ui->playerTimeLabel->setText(time);
   else
     ui->opponentTimeLabel->setText(time);
+}
+
+void ChessGUI::updateEvalBar(int cp, const QString &label) {
+  ui->evalBar->setValue(cp);
+  ui->evalBarLabel->setText(label);
 }

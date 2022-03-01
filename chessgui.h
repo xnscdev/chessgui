@@ -37,6 +37,7 @@ private slots:
   void toLastMove();
   void updateWhiteTimer(const QString &time);
   void updateBlackTimer(const QString &time);
+  void updateEvalBar(int cp, const QString &label);
 };
 
 #endif

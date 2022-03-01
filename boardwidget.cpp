@@ -48,8 +48,10 @@ void BoardWidgetBackend::reset() {
 void BoardWidgetBackend::newGame() {
   delete whiteInputMethod;
   delete blackInputMethod;
+  delete evalEngine;
   whiteInputMethod = createMoveInputMethod("whitePlayer", true);
   blackInputMethod = createMoveInputMethod("blackPlayer", false);
+  evalEngine = createEvalEngine();
   gameRunning = true;
   reset();
 
@@ -67,7 +69,7 @@ void BoardWidgetBackend::newGame() {
     whiteTimer->start();
     whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());
     blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
-    whiteInputMethod->start(uciMoveString, whiteTime, blackTime);
+    whiteInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
   }
 }
 
@@ -107,6 +109,7 @@ void BoardWidgetBackend::toMove(int move) {
 void BoardWidgetBackend::closeEngines() {
   delete whiteInputMethod;
   delete blackInputMethod;
+  delete evalEngine;
 }
 
 void BoardWidgetBackend::whiteTimerTick() {
@@ -338,10 +341,12 @@ void BoardWidgetBackend::doMove(Move &move) {
       blackTimer->start();
     }
   }
+  if (evalEngine)
+    evalEngine->startEval(uciMoveString, turn);
   if (turn)
-    whiteInputMethod->start(uciMoveString, whiteTime, blackTime);
+    whiteInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
   else
-    blackInputMethod->start(uciMoveString, whiteTime, blackTime);
+    blackInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
 }
 
 bool BoardWidgetBackend::tryMove(QPoint to) {
@@ -441,6 +446,19 @@ MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key, b
   return method;
 }
 
+UCIEngine *BoardWidgetBackend::createEvalEngine() {
+  int index = settings.value("evalEngine").toInt();
+  if (index < 0)
+    return nullptr;
+  settings.beginReadArray("engines");
+  settings.setArrayIndex(index);
+  QString cmd = settings.value("command").toString();
+  settings.endArray();
+  auto *engine = new UCIEngine(cmd, true, true, settings.value("engineDepth", 25).toInt());
+  connect(engine, &UCIEngine::evalBarUpdate, this, &BoardWidgetBackend::receiveEvalBarUpdate);
+  return engine;
+}
+
 void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
   QPoint from{moveString[0].toLatin1() - 'a', QString(moveString[1]).toInt() - 1};
   QPoint to{moveString[2].toLatin1() - 'a', QString(moveString[3]).toInt() - 1};
@@ -465,6 +483,7 @@ BoardWidget::BoardWidget(QWidget *parent)
   connect(backend, &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
   connect(backend, &BoardWidgetBackend::whiteTimerTicked, this, &BoardWidget::receiveWhiteTimerTick);
   connect(backend, &BoardWidgetBackend::blackTimerTicked, this, &BoardWidget::receiveBlackTimerTick);
+  connect(backend, &BoardWidgetBackend::evalBarUpdate, this, &BoardWidget::receiveEvalBarUpdate);
 }
 
 QString BoardWidget::playerName(QSettings &settings, const QString &key, int defaultValue) {
@@ -535,16 +554,4 @@ QString BoardWidget::formattedTime(int ms) const {
 QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) const {
   QString value = settings.value(key).toString();
   return value.isEmpty() ? "?" : value;
-}
-
-void BoardWidget::receiveMoveMade(const QString &move) {
-  emit moveMade(move);
-}
-
-void BoardWidget::receiveWhiteTimerTick(int time) {
-  emit whiteTimerTicked(formattedTime(time));
-}
-
-void BoardWidget::receiveBlackTimerTick(int time) {
-  emit blackTimerTicked(formattedTime(time));
 }
