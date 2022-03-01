@@ -81,6 +81,7 @@ private:
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
   bool findGameEnd();
+  static bool findDrawIM(QString ima, QString imb);
   void endGame(const QString &score, const QString &msg);
   [[nodiscard]] QString gameState() const;
   MoveInputMethod *createMoveInputMethod(const QString &key, bool white);

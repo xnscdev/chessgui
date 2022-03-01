@@ -372,6 +372,24 @@ Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
 }
 
 bool BoardWidgetBackend::findGameEnd() {
+  QString ima;
+  QString imb;
+  for (int y = 0; y < game.size.height(); y++) {
+    for (int x = 0; x < game.size.width(); x++) {
+      GamePiece &piece = position[y][x];
+      if (piece.piece) {
+        if (piece.white)
+          ima += game.notation[piece.piece->name];
+        else
+          imb += game.notation[piece.piece->name];
+      }
+    }
+  }
+  if (findDrawIM(ima, imb)) {
+    endGame("1/2-1/2", "Draw by insufficient material");
+    return true;
+  }
+
   for (int y = 0; y < game.size.height(); y++) {
     for (int x = 0; x < game.size.width(); x++) {
       GamePiece &piece = position[y][x];
@@ -398,6 +416,17 @@ bool BoardWidgetBackend::findGameEnd() {
   else
     endGame(turn ? "0-1" : "1-0", turn ? "Black wins" : "White wins");
   return true;
+}
+
+bool BoardWidgetBackend::findDrawIM(QString ima, QString imb) {
+  std::sort(ima.begin(), ima.end());
+  std::sort(imb.begin(), imb.end());
+  if (imb.size() > ima.size()) {
+    QString temp = imb;
+    imb = ima;
+    ima = temp;
+  }
+  return (imb == "k" && QList<QString>{"bk", "kn", "knn"}.contains(ima)) || (ima == "bk" && imb == "bk");
 }
 
 void BoardWidgetBackend::endGame(const QString &score, const QString &msg) {

@@ -26,6 +26,7 @@ DefaultGameVariant::DefaultGameVariant()
   notation["bishop"] = "b";
   notation["queen"] = "q";
   notation["king"] = "k";
+  notation["pawn"] = "p";
 }
 
 void DefaultGameVariant::setup(GamePosition &position) {
