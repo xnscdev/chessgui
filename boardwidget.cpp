@@ -477,10 +477,10 @@ MoveInputMethod *BoardWidgetBackend::createMoveInputMethod(const QString &key, b
 
 UCIEngine *BoardWidgetBackend::createEvalEngine() {
   int index = settings.value("evalEngine").toInt();
-  if (index < 0)
+  if (index < 1)
     return nullptr;
   settings.beginReadArray("engines");
-  settings.setArrayIndex(index);
+  settings.setArrayIndex(index - 1);
   QString cmd = settings.value("command").toString();
   settings.endArray();
   auto *engine = new UCIEngine(cmd, true, true, settings.value("engineDepth", 25).toInt());

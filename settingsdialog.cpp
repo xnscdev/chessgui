@@ -101,6 +101,7 @@ void SettingsDialog::loadSettings() {
   ui->blackPlayer->addItem("Human Player 1");
   ui->blackPlayer->addItem("Human Player 2");
   ui->evalEngineBox->clear();
+  ui->evalEngineBox->addItem("(None)");
 
   for (int i = 0; i < ui->enginesList->rowCount(); i++) {
     QString engine = ui->enginesList->item(i, 0)->text();
@@ -111,23 +112,6 @@ void SettingsDialog::loadSettings() {
   ui->whitePlayer->setCurrentIndex(settings.value("whitePlayer", 0).toInt());
   ui->blackPlayer->setCurrentIndex(settings.value("blackPlayer", 1).toInt());
   ui->evalEngineBox->setCurrentIndex(settings.value("evalEngine").toInt());
-}
-
-void SettingsDialog::updatePlayerComboBoxes() {
-  ui->whitePlayer->clear();
-  ui->whitePlayer->addItem("Human Player 1");
-  ui->whitePlayer->addItem("Human Player 2");
-  ui->blackPlayer->clear();
-  ui->blackPlayer->addItem("Human Player 1");
-  ui->blackPlayer->addItem("Human Player 2");
-  ui->evalEngineBox->clear();
-
-  for (int i = 0; i < ui->enginesList->rowCount(); i++) {
-    QString engine = ui->enginesList->item(i, 0)->text() + " (" + ui->enginesList->item(i, 1)->text() + ")";
-    ui->whitePlayer->addItem(engine);
-    ui->blackPlayer->addItem(engine);
-    ui->evalEngineBox->addItem(engine);
-  }
 }
 
 void SettingsDialog::selectionChanged() {

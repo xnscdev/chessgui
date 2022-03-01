@@ -24,7 +24,6 @@ private:
   QSettings settings;
 
   void loadSettings();
-  void updatePlayerComboBoxes();
 
 private slots:
   void selectionChanged();
