@@ -7,6 +7,8 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
   ui->setupUi(this);
   connect(ui->boardWidget, &BoardWidget::moveMade, ui->movesList, &MovesListWidget::recordMove);
   connect(ui->boardWidget, &BoardWidget::moveMade, this, &ChessGUI::updateSelectedAfterMove);
+  connect(ui->boardWidget, &BoardWidget::whiteTimerTicked, this, &ChessGUI::updateWhiteTimer);
+  connect(ui->boardWidget, &BoardWidget::blackTimerTicked, this, &ChessGUI::updateBlackTimer);
   connect(ui->firstMoveButton, &QPushButton::clicked, this, &ChessGUI::toFirstMove);
   connect(ui->prevMoveButton, &QPushButton::clicked, this, &ChessGUI::toPrevMove);
   connect(ui->nextMoveButton, &QPushButton::clicked, this, &ChessGUI::toNextMove);
@@ -32,8 +34,11 @@ void ChessGUI::updatePlayerNames() {
 
 void ChessGUI::updateTimers() {
   QSettings settings;
-  ui->playerTimeLabel->setText(ui->boardWidget->formattedTime(!ui->boardWidget->reversed()));
-  ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(ui->boardWidget->reversed()));
+  if (settings.value("timeControl").toBool()) {
+    int ms = settings.value("baseTime").toInt() * 60000;
+    ui->playerTimeLabel->setText(ui->boardWidget->formattedTime(ms));
+    ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(ms));
+  }
 }
 
 void ChessGUI::closeEvent(QCloseEvent *event) {
@@ -43,7 +48,7 @@ void ChessGUI::closeEvent(QCloseEvent *event) {
 void ChessGUI::newGame() {
   updatePlayerNames();
   updateTimers();
-  ui->boardWidget->reset();
+  ui->boardWidget->newGame();
   ui->movesList->clearMoves();
 }
 
@@ -100,4 +105,18 @@ void ChessGUI::toNextMove() {
 void ChessGUI::toLastMove() {
   ui->boardWidget->toLastMove();
   ui->movesList->updateSelected(ui->boardWidget->historyMove());
+}
+
+void ChessGUI::updateWhiteTimer(const QString &time) {
+  if (ui->boardWidget->reversed())
+    ui->opponentTimeLabel->setText(time);
+  else
+    ui->playerTimeLabel->setText(time);
+}
+
+void ChessGUI::updateBlackTimer(const QString &time) {
+  if (ui->boardWidget->reversed())
+    ui->playerTimeLabel->setText(time);
+  else
+    ui->opponentTimeLabel->setText(time);
 }

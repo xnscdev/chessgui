@@ -6,20 +6,9 @@
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   reset();
-  gameRunning = false;
-  if (settings.value("timeControl").toBool()) {
-    whiteTimer = new QTimer(this);
-    blackTimer = new QTimer(this);
-    connect(whiteTimer, &QTimer::timeout, this, &BoardWidgetBackend::whiteTimerTick);
-    connect(blackTimer, &QTimer::timeout, this, &BoardWidgetBackend::blackTimerTick);
-    whiteTime = settings.value("baseTime").toInt() * 60000;
-    blackTime = whiteTime;
-    moveBonus = settings.value("moveBonus").toInt() * 1000;
-  }
 }
 
 void BoardWidgetBackend::reset() {
-  gameRunning = true;
   turn = true;
   pgnResult = "*";
   historyMove = -1;
@@ -35,6 +24,16 @@ void BoardWidgetBackend::reset() {
   uciMoveString.clear();
   moveOccurrences.clear();
   lastIrreversibleMove = 0;
+  whiteTime = 0;
+  blackTime = 0;
+  if (whiteTimer) {
+    delete whiteTimer;
+    whiteTimer = nullptr;
+  }
+  if (blackTimer) {
+    delete blackTimer;
+    blackTimer = nullptr;
+  }
 
   position.clear();
   position.resize(game.size.height());
@@ -51,10 +50,25 @@ void BoardWidgetBackend::newGame() {
   delete blackInputMethod;
   whiteInputMethod = createMoveInputMethod("whitePlayer", true);
   blackInputMethod = createMoveInputMethod("blackPlayer", false);
+  gameRunning = true;
   reset();
-  whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());
-  blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
-  whiteInputMethod->start(uciMoveString);
+
+  if (settings.value("timeControl").toBool()) {
+    whiteTimer = new QTimer(this);
+    whiteTimer->setInterval(timerFreq);
+    blackTimer = new QTimer(this);
+    blackTimer->setInterval(timerFreq);
+    connect(whiteTimer, &QTimer::timeout, this, &BoardWidgetBackend::whiteTimerTick);
+    connect(blackTimer, &QTimer::timeout, this, &BoardWidgetBackend::blackTimerTick);
+    whiteTime = settings.value("baseTime").toInt() * 60000;
+    blackTime = whiteTime;
+    moveBonus = settings.value("moveBonus").toInt() * 1000;
+
+    whiteTimer->start();
+    whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());
+    blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
+    whiteInputMethod->start(uciMoveString, whiteTime, blackTime);
+  }
 }
 
 void BoardWidgetBackend::toFirstMove() {
@@ -88,6 +102,29 @@ void BoardWidgetBackend::toMove(int move) {
   else
     historyMove = move;
   update();
+}
+
+void BoardWidgetBackend::closeEngines() {
+  delete whiteInputMethod;
+  delete blackInputMethod;
+}
+
+void BoardWidgetBackend::whiteTimerTick() {
+  whiteTime -= timerFreq;
+  if (whiteTime <= 0) {
+    whiteTime = 0;
+    endGame("0-1", "Black wins by timeout");
+  }
+  emit whiteTimerTicked(whiteTime);
+}
+
+void BoardWidgetBackend::blackTimerTick() {
+  blackTime -= timerFreq;
+  if (blackTime <= 0) {
+    blackTime = 0;
+    endGame("1-0", "White wins by timeout");
+  }
+  emit blackTimerTicked(blackTime);
 }
 
 void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
@@ -287,10 +324,24 @@ void BoardWidgetBackend::doMove(Move &move) {
 
   if (findGameEnd())
     return;
+  if (whiteTimer || blackTimer) {
+    if (turn) {
+      blackTime += moveBonus - blackTimer->interval() + blackTimer->remainingTime();
+      emit blackTimerTicked(blackTime);
+      blackTimer->stop();
+      whiteTimer->start();
+    }
+    else {
+      whiteTime += moveBonus - whiteTimer->interval() + whiteTimer->remainingTime();
+      emit whiteTimerTicked(whiteTime);
+      whiteTimer->stop();
+      blackTimer->start();
+    }
+  }
   if (turn)
-    whiteInputMethod->start(uciMoveString);
+    whiteInputMethod->start(uciMoveString, whiteTime, blackTime);
   else
-    blackInputMethod->start(uciMoveString);
+    blackInputMethod->start(uciMoveString, whiteTime, blackTime);
 }
 
 bool BoardWidgetBackend::tryMove(QPoint to) {
@@ -351,6 +402,14 @@ void BoardWidgetBackend::endGame(const QString &score, const QString &msg) {
   box.setInformativeText(msg);
   gameRunning = false;
   pgnResult = score;
+  if (whiteTimer) {
+    delete whiteTimer;
+    whiteTimer = nullptr;
+  }
+  if (blackTimer) {
+    delete blackTimer;
+    blackTimer = nullptr;
+  }
   box.exec();
 }
 
@@ -399,24 +458,13 @@ void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
   }
 }
 
-void BoardWidgetBackend::whiteTimerTick() {
-  whiteTime -= timerFreq;
-}
-
-void BoardWidgetBackend::blackTimerTick() {
-  blackTime -= timerFreq;
-}
-
-void BoardWidgetBackend::closeEngines() {
-  delete whiteInputMethod;
-  delete blackInputMethod;
-}
-
 BoardWidget::BoardWidget(QWidget *parent)
     : AspectRatioWidget(new BoardWidgetBackend(*loadedVariant), static_cast<float>(loadedVariant->size.width()),
                         static_cast<float>(loadedVariant->size.height()), parent) {
   backend = dynamic_cast<BoardWidgetBackend *>(widget());
   connect(backend, &BoardWidgetBackend::moveMade, this, &BoardWidget::receiveMoveMade);
+  connect(backend, &BoardWidgetBackend::whiteTimerTicked, this, &BoardWidget::receiveWhiteTimerTick);
+  connect(backend, &BoardWidgetBackend::blackTimerTicked, this, &BoardWidget::receiveBlackTimerTick);
 }
 
 QString BoardWidget::playerName(QSettings &settings, const QString &key, int defaultValue) {
@@ -464,23 +512,39 @@ int BoardWidget::historyMove() const {
   return move;
 }
 
-QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) const {
-  QString value = settings.value(key).toString();
-  return value.isEmpty() ? "?" : value;
-}
-
-QString BoardWidget::formattedTime(bool white) const {
-  int ms = white ? backend->whiteTime : backend->blackTime;
+QString BoardWidget::formattedTime(int ms) const {
   int sec = ms / 1000;
   ms %= 1000;
   int min = sec / 60;
   sec %= 60;
   int h = min / 60;
   min %= 60;
-  return QString::number(h).rightJustified(2, '0') + ':' + QString::number(min).rightJustified(2, '0') + ':' +
-         QString::number(sec).rightJustified(2, '0') + '.' + QString::number(ms).rightJustified(3, '0');
+  if (min)
+    return QStringLiteral("%1:%2:%3")
+        .arg(QString::number(h), 2, '0')
+        .arg(QString::number(min), 2, '0')
+        .arg(QString::number(sec), 2, '0');
+  else
+    return QStringLiteral("%1:%2:%3.%4")
+        .arg(QString::number(h), 2, '0')
+        .arg(QString::number(min), 2, '0')
+        .arg(QString::number(sec), 2, '0')
+        .arg(QString::number(ms), 3, '0');
+}
+
+QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) const {
+  QString value = settings.value(key).toString();
+  return value.isEmpty() ? "?" : value;
 }
 
 void BoardWidget::receiveMoveMade(const QString &move) {
   emit moveMade(move);
+}
+
+void BoardWidget::receiveWhiteTimerTick(int time) {
+  emit whiteTimerTicked(formattedTime(time));
+}
+
+void BoardWidget::receiveBlackTimerTick(int time) {
+  emit blackTimerTicked(formattedTime(time));
 }

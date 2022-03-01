@@ -35,6 +35,8 @@ private slots:
   void toPrevMove();
   void toNextMove();
   void toLastMove();
+  void updateWhiteTimer(const QString &time);
+  void updateBlackTimer(const QString &time);
 };
 
 #endif

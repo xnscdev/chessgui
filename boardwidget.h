@@ -24,13 +24,6 @@ public:
   QList<GameHistoryPosition> history;
   int historyMove;
   QString uciMoveString;
-  QTimer *whiteTimer;
-  QTimer *blackTimer;
-  int whiteTimerDelay = 0;
-  int blackTimerDelay = 0;
-  int whiteTime;
-  int blackTime;
-  int moveBonus;
 
   explicit BoardWidgetBackend(GameVariant &game, QWidget *parent = nullptr);
   void reset();
@@ -41,6 +34,8 @@ public:
   void toLastMove();
   void toMove(int move);
   void closeEngines();
+  void whiteTimerTick();
+  void blackTimerTick();
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -52,11 +47,11 @@ private:
   constexpr static const QColor highlightColor{255, 232, 124};
   constexpr static const QColor lightColor{236, 207, 169};
   constexpr static const QColor darkColor{206, 144, 89};
-  static const int timerFreq = 50;
+  static const int timerFreq = 8;
   QSettings settings;
   GameVariant &game;
   GamePosition position;
-  bool gameRunning;
+  bool gameRunning = false;
   bool turn;
   QPoint highlightedTile;
   QPoint moveFromTile;
@@ -70,6 +65,11 @@ private:
   int lastIrreversibleMove;
   MoveInputMethod *whiteInputMethod = nullptr;
   MoveInputMethod *blackInputMethod = nullptr;
+  QTimer *whiteTimer;
+  QTimer *blackTimer;
+  int whiteTime;
+  int blackTime;
+  int moveBonus;
 
   QPoint selectedTile(QPoint pos);
   void drawPosition(QPainter &painter, GamePosition &position);
@@ -85,11 +85,11 @@ private:
 
 signals:
   void moveMade(const QString &move);
+  void whiteTimerTicked(int time);
+  void blackTimerTicked(int time);
 
 private slots:
   void receiveEngineMove(const QString &moveString);
-  void whiteTimerTick();
-  void blackTimerTick();
 };
 
 class BoardWidget : public AspectRatioWidget {
@@ -97,14 +97,14 @@ class BoardWidget : public AspectRatioWidget {
 
 public:
   explicit BoardWidget(QWidget *parent = nullptr);
-  void reset() { backend->newGame(); }
+  void newGame() { backend->newGame(); }
   static QString playerName(QSettings &settings, const QString &key, int defaultValue);
   [[nodiscard]] bool reversed() const { return backend->orientation; }
   [[nodiscard]] QString metadataPGN() const;
   [[nodiscard]] int historyMove() const;
   [[nodiscard]] QList<GameHistoryPosition> history() { return backend->history; }
-  [[nodiscard]] QString formattedTime(bool white) const;
   void closeEngines() { backend->closeEngines(); }
+  [[nodiscard]] QString formattedTime(int ms) const;
 
 private:
   BoardWidgetBackend *backend;
@@ -113,9 +113,13 @@ private:
 
 signals:
   void moveMade(const QString &move);
+  void whiteTimerTicked(const QString &time);
+  void blackTimerTicked(const QString &time);
 
 private slots:
   void receiveMoveMade(const QString &move);
+  void receiveWhiteTimerTick(int time);
+  void receiveBlackTimerTick(int time);
 
 public slots:
   void toFirstMove() { backend->toFirstMove(); }

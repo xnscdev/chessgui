@@ -27,7 +27,6 @@ UCIEngine::UCIEngine(const QString &path, bool white) : process(new QProcess) {
 }
 
 void UCIEngine::sendCommand(const QString &cmd) {
-  qDebug() << ">>" << cmd;
   process->write((cmd + '\n').toUtf8());
 }
 
@@ -36,10 +35,8 @@ void UCIEngine::waitResponse(const QString &response) {
     QSignalSpy spy(process, &QProcess::readyReadStandardOutput);
     if (!spy.wait(15000))
       throw UCIException();
-    output = QString::fromUtf8(process->readAllStandardOutput()).split('\n');
+    output = QString::fromUtf8(process->readAllStandardOutput()).split(QRegularExpression{R"-((\r\n?|\n))-"});
     output.removeAll({});
-    for (const QString &str : output)
-      qDebug() << str;
     if (output.last() == response)
       break;
   }
@@ -50,10 +47,8 @@ QString UCIEngine::waitMove() {
     QSignalSpy spy(process, &QProcess::readyReadStandardOutput);
     if (!spy.wait(30000))
       throw UCIException();
-    output = QString::fromUtf8(process->readAllStandardOutput()).split('\n');
+    output = QString::fromUtf8(process->readAllStandardOutput()).split(QRegularExpression{R"-((\r\n?|\n))-"});
     output.removeAll({});
-    for (const QString &str : output)
-      qDebug() << str;
     if (output.last().startsWith("bestmove")) {
       QString moveString = output.last().split(' ')[1];
       return moveString;
