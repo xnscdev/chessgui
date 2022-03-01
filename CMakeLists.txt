@@ -11,8 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Test Concurrent REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Test Concurrent REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Test REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Test REQUIRED)
 include(GNUInstallDirs)
 
 add_compile_definitions(PROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
@@ -36,23 +36,16 @@ set(PROJECT_SOURCES
         moveinputmethod.cpp moveinputmethod.h)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(chessgui
-            MANUAL_FINALIZATION
-            ${PROJECT_SOURCES}
-            )
+    qt_add_executable(chessgui MANUAL_FINALIZATION ${PROJECT_SOURCES})
 else ()
     if (ANDROID)
-        add_library(chessgui SHARED
-                ${PROJECT_SOURCES}
-                )
+        add_library(chessgui SHARED ${PROJECT_SOURCES})
     else ()
-        add_executable(chessgui
-                ${PROJECT_SOURCES}
-                )
+        add_executable(chessgui ${PROJECT_SOURCES})
     endif ()
 endif ()
 
-target_link_libraries(chessgui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Concurrent)
+target_link_libraries(chessgui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Test)
 
 set_target_properties(chessgui PROPERTIES
         MACOSX_BUNDLE_GUI_IDENTIFIER com.github.xnscdev.chessgui

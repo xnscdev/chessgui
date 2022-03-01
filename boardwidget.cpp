@@ -3,7 +3,6 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
-#include <QtConcurrent>
 
 BoardWidgetBackend::BoardWidgetBackend(GameVariant &game, QWidget *parent) : game(game), QWidget(parent) {
   reset();
