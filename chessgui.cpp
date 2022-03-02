@@ -49,8 +49,8 @@ void ChessGUI::closeEvent(QCloseEvent *event) {
 void ChessGUI::newGame() {
   updatePlayerNames();
   updateTimers();
-  ui->boardWidget->newGame();
   ui->movesList->clearMoves();
+  ui->boardWidget->newGame();
 }
 
 void ChessGUI::saveGame() {

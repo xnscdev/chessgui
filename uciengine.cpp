@@ -41,7 +41,7 @@ void UCIEngine::waitResponse(const QString &response) {
   while (true) {
     QSignalSpy spy(process, &QProcess::readyReadStandardOutput);
     if (!spy.wait(15000))
-      throw UCIException();
+      continue;
     QStringList output = QString::fromUtf8(process->readAllStandardOutput()).split(QRegularExpression{R"-((\r\n?|\n))-"});
     output.removeAll({});
     if (!output.isEmpty() && output.last() == response)
@@ -61,7 +61,7 @@ QString UCIEngine::waitMove() {
   while (true) {
     QSignalSpy spy(process, &QProcess::readyReadStandardOutput);
     if (!spy.wait(30000))
-      throw UCIException();
+      continue;
     QStringList output = QString::fromUtf8(process->readAllStandardOutput()).split(QRegularExpression{R"-((\r\n?|\n))-"});
     output.removeAll({});
     if (output.isEmpty())

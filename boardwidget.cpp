@@ -55,6 +55,7 @@ void BoardWidgetBackend::newGame() {
   gameRunning = true;
   reset();
 
+  emit evalBarUpdate(0, "0.00");
   if (settings.value("timeControl").toBool()) {
     whiteTimer = new QTimer(this);
     whiteTimer->setInterval(timerFreq);
@@ -65,6 +66,8 @@ void BoardWidgetBackend::newGame() {
     whiteTime = settings.value("baseTime").toInt() * 60000;
     blackTime = whiteTime;
     moveBonus = settings.value("moveBonus").toInt() * 1000;
+    emit whiteTimerTicked(whiteTime);
+    emit blackTimerTicked(blackTime);
 
     whiteTimer->start();
     whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());

@@ -21,9 +21,6 @@ public:
   void reset(bool useELO, int elo) override;
   [[nodiscard]] bool manual() const override { return false; }
 
-private:
-  void uciError() const;
-
 signals:
   void engineMoved(const QString &move);
 
