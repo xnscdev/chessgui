@@ -15,9 +15,12 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Test REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Test REQUIRED)
 include(GNUInstallDirs)
 
+set(CONF_DIR ${CMAKE_INSTALL_FULL_SYSCONFDIR}/chessgui)
+set(DATA_DIR ${CMAKE_INSTALL_FULL_DATADIR}/chessgui)
+
 add_compile_definitions(PROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
-add_compile_definitions(CONF_DIR="${CMAKE_INSTALL_FULL_SYSCONFDIR}/chessgui")
-add_compile_definitions(DATA_DIR="${CMAKE_INSTALL_FULL_DATADIR}/chessgui")
+add_compile_definitions(CONF_DIR="${CONF_DIR}")
+add_compile_definitions(DATA_DIR="${DATA_DIR}")
 
 set(PROJECT_SOURCES
         main.cpp chessgui.qrc
@@ -58,3 +61,5 @@ if (QT_VERSION_MAJOR EQUAL 6)
 endif ()
 
 install(TARGETS chessgui RUNTIME)
+install(FILES pieces.ini DESTINATION ${CONF_DIR})
+install(DIRECTORY icons DESTINATION ${DATA_DIR})
