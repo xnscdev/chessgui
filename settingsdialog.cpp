@@ -1,6 +1,6 @@
 #include "settingsdialog.h"
 #include "editenginedialog.h"
-#include "ui_SettingsDialog.h"
+#include "ui_settingsdialog.h"
 #include <QMessageBox>
 #include <QSettings>
 

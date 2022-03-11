@@ -68,8 +68,8 @@ private:
   MoveInputMethod *whiteInputMethod = nullptr;
   MoveInputMethod *blackInputMethod = nullptr;
   UCIEngine *evalEngine = nullptr;
-  QTimer *whiteTimer;
-  QTimer *blackTimer;
+  QTimer *whiteTimer = nullptr;
+  QTimer *blackTimer = nullptr;
   int whiteTime;
   int blackTime;
   int moveBonus;

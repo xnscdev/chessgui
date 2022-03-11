@@ -1,5 +1,5 @@
 #include "editenginedialog.h"
-#include "ui_EditEngineDialog.h"
+#include "ui_editenginedialog.h"
 
 EditEngineDialog::EditEngineDialog(QWidget *parent) : QDialog(parent), ui(new Ui::EditEngineDialog) {
   ui->setupUi(this);

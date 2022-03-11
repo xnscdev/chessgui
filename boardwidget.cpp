@@ -74,6 +74,10 @@ void BoardWidgetBackend::newGame() {
     blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
     whiteInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
   }
+  else {
+    emit whiteTimerTicked(-1);
+    emit blackTimerTicked(-1);
+  }
 }
 
 void BoardWidgetBackend::toFirstMove() {
@@ -565,6 +569,8 @@ int BoardWidget::historyMove() const {
 }
 
 QString BoardWidget::formattedTime(int ms) const {
+  if (ms < 0)
+    return "";
   int sec = ms / 1000;
   ms %= 1000;
   int min = sec / 60;

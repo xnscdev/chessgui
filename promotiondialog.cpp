@@ -1,5 +1,5 @@
 #include "promotiondialog.h"
-#include "ui_PromotionDialog.h"
+#include "ui_promotiondialog.h"
 
 PromotionDialog::PromotionDialog(Piece *oldPiece, GameVariant &game, bool white, QWidget *parent)
     : QDialog(parent), ui(new Ui::PromotionDialog), selectedPiece(nullptr) {
