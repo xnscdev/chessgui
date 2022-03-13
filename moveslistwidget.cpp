@@ -10,7 +10,7 @@ MovesListWidget::MovesListWidget(QWidget *parent) : QTableWidget(parent), moveNu
   setColumnCount(2);
   setRowCount(1);
   updateSelected(0);
-  pgnMoveString = "1. ";
+  pgnMoveString.clear();
 }
 
 void MovesListWidget::clearMoves() {
@@ -20,10 +20,11 @@ void MovesListWidget::clearMoves() {
   selectionModel()->select(model()->index(0, 0), QItemSelectionModel::Select);
   moveNumber = 0;
   turn = true;
-  pgnMoveString = "1. ";
+  pgnMoveString.clear();
 }
 
 void MovesListWidget::updateSelected(int move) {
+  move--;
   QModelIndex index = model()->index(move / 2, move % 2);
   clearSelection();
   selectionModel()->select(index, QItemSelectionModel::Select);
@@ -31,11 +32,12 @@ void MovesListWidget::updateSelected(int move) {
 
 void MovesListWidget::recordMove(const QString &move) {
   setItem(moveNumber, turn ? 0 : 1, new QTableWidgetItem(move));
+  if (turn)
+    pgnMoveString += QString::number(moveNumber + 1) + ". ";
   pgnMoveString += move + ' ';
   turn = !turn;
   if (turn) {
     insertRow(rowCount());
     moveNumber++;
-    pgnMoveString += QString::number(moveNumber + 1) + ". ";
   }
 }
