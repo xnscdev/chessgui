@@ -82,7 +82,7 @@ private:
   bool tryMove(QPoint to);
   bool movablePieceAt(QPoint tile);
   Piece *promotePiece(Piece *oldPiece);
-  bool findGameEnd();
+  bool findGameEnd(bool &checkmated, QString &result, QString &msg);
   static bool findDrawIM(QString ima, QString imb);
   void endGame(const QString &score, const QString &msg);
   [[nodiscard]] QString gameState() const;

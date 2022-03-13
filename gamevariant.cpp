@@ -106,26 +106,8 @@ QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, Q
     str += notation[promote->name].toUpper();
   }
 
-  GamePosition posCopy = positionAfterMove(position, move);
-  if (!legalPosition(posCopy, !white)) {
-    for (int y = 0; y < size.height(); y++) {
-      for (int x = 0; x < size.width(); x++) {
-        GamePiece &testPiece = posCopy[y][x];
-        if (testPiece.piece && testPiece.white != white) {
-          QHash<QPoint, Move> moves = availableMoves(posCopy, ep, {x, y});
-          QHashIterator<QPoint, Move> it(moves);
-          while (it.hasNext()) {
-            it.next();
-            if (legalPosition(positionAfterMove(posCopy, it.value()), !white)) {
-              str += "+";
-              return str;
-            }
-          }
-        }
-      }
-    }
-    str += "#";
-  }
+  if (!legalPosition(positionAfterMove(position, move), !white))
+    str += "+";
   return str;
 }
 

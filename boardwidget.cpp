@@ -302,13 +302,13 @@ void BoardWidgetBackend::doMove(Move &move) {
     promotionPiece = promotePiece(fromPiece.piece);
     move.promote = game.notation[promotionPiece->name];
   }
+
   QString moveName = game.moveName(position, move, ep, promotionPiece, turn);
   uciMoveString += ' ' + move;
   if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1 || fromPiece.piece->name == "pawn")
     lastIrreversibleMove = 0;
   else
     lastIrreversibleMove++;
-  emit moveMade(moveName);
 
   toPiece.piece = fromPiece.piece;
   toPiece.white = fromPiece.white;
@@ -341,8 +341,18 @@ void BoardWidgetBackend::doMove(Move &move) {
   moveToTile = move.to;
   update();
 
-  if (findGameEnd())
+  bool checkmated = false;
+  QString result;
+  QString msg;
+  if (findGameEnd(checkmated, result, msg)) {
+    if (checkmated)
+      moveName = moveName.replace('+', '#');
+    emit moveMade(moveName);
+    endGame(result, msg);
     return;
+  }
+  emit moveMade(moveName);
+
   if (whiteTimer || blackTimer) {
     if (turn) {
       blackTime += moveBonus - blackTimer->interval() + blackTimer->remainingTime();
@@ -387,7 +397,7 @@ Piece *BoardWidgetBackend::promotePiece(Piece *oldPiece) {
   return dialog.selectedPiece;
 }
 
-bool BoardWidgetBackend::findGameEnd() {
+bool BoardWidgetBackend::findGameEnd(bool &checkmated, QString &result, QString &msg) {
   QString ima;
   QString imb;
   for (int y = 0; y < game.size.height(); y++) {
@@ -402,7 +412,8 @@ bool BoardWidgetBackend::findGameEnd() {
     }
   }
   if (findDrawIM(ima, imb)) {
-    endGame("1/2-1/2", "Draw by insufficient material");
+    result = "1/2-1/2";
+    msg = "Draw by insufficient material";
     return true;
   }
 
@@ -415,10 +426,11 @@ bool BoardWidgetBackend::findGameEnd() {
         while (it.hasNext()) {
           it.next();
           if (legalPosition(positionAfterMove(position, it.value()), turn)) {
+            result = "1/2-1/2";
             if (++moveOccurrences[gameState()] >= 3)
-              endGame("1/2-1/2", "Draw by repetition");
+              msg = "Draw by repetition";
             else if (lastIrreversibleMove >= 100)
-              endGame("1/2-1/2", "Draw by 50-move rule");
+              msg = "Draw by 50-move rule";
             else
               return false;
             return true;
@@ -427,10 +439,15 @@ bool BoardWidgetBackend::findGameEnd() {
       }
     }
   }
-  if (legalPosition(position, turn))
-    endGame("1/2-1/2", "Draw by stalemate");
-  else
-    endGame(turn ? "0-1" : "1-0", turn ? "Black wins" : "White wins");
+  if (legalPosition(position, turn)) {
+    result = "1/2-1/2";
+    msg = "Draw by stalemate";
+  }
+  else {
+    result = turn ? "0-1" : "1-0";
+    msg = turn ? "Black wins" : "White wins";
+    checkmated = true;
+  }
   return true;
 }
 
