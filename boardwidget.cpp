@@ -137,6 +137,13 @@ void BoardWidgetBackend::blackTimerTick() {
   emit blackTimerTicked(blackTime);
 }
 
+void BoardWidgetBackend::updateTimers() {
+  if (whiteTimer || blackTimer) {
+    emit whiteTimerTicked(whiteTime);
+    emit blackTimerTicked(blackTime);
+  }
+}
+
 void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
   int xStep = width() / game.size.width();
@@ -160,7 +167,9 @@ void BoardWidgetBackend::paintEvent(QPaintEvent *event) {
   for (int x = 0; x < game.size.width(); x++) {
     for (int y = 0; y < game.size.height(); y++) {
       QColor color;
-      QPoint point(x, game.size.height() - y - 1);
+      int px = orientation ? game.size.width() - x - 1 : x;
+      int py = orientation ? y : game.size.height() - y - 1;
+      QPoint point(px, py);
       if (point == toHighlight || point == altHighlight)
         color = highlightColor;
       else if (point == fromHighlight)
@@ -590,7 +599,12 @@ QString BoardWidget::formattedTime(int ms) const {
         .arg(QString::number(ms), 3, '0');
 }
 
-QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) const {
+void BoardWidget::flipBoard() {
+  backend->orientation = !backend->orientation;
+  backend->updateTimers();
+}
+
+QString BoardWidget::fillPGNTag(const QSettings &settings, const QString &key) {
   QString value = settings.value(key).toString();
   return value.isEmpty() ? "?" : value;
 }

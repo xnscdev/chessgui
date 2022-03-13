@@ -31,6 +31,7 @@ private:
 private slots:
   void updateSelectedAfterMove();
   void moveListSelected();
+  void flipBoard();
   void toFirstMove();
   void toPrevMove();
   void toNextMove();

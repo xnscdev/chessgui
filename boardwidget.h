@@ -21,6 +21,7 @@ class BoardWidgetBackend : public QWidget {
 
 public:
   bool orientation = false;
+  bool gameRunning = false;
   QString pgnResult;
   QList<GameHistoryPosition> history;
   int historyMove;
@@ -37,6 +38,7 @@ public:
   void closeEngines();
   void whiteTimerTick();
   void blackTimerTick();
+  void updateTimers();
 
 protected:
   void paintEvent(QPaintEvent *event) override;
@@ -53,7 +55,6 @@ private:
   QSettings settings;
   GameVariant &game;
   GamePosition position;
-  bool gameRunning = false;
   bool turn;
   QPoint highlightedTile;
   QPoint moveFromTile;
@@ -107,16 +108,18 @@ public:
   void newGame() { backend->newGame(); }
   static QString playerName(QSettings &settings, const QString &key, int defaultValue);
   [[nodiscard]] bool reversed() const { return backend->orientation; }
+  [[nodiscard]] bool gameRunning() const { return backend->gameRunning; }
   [[nodiscard]] QString metadataPGN() const;
   [[nodiscard]] int historyMove() const;
   [[nodiscard]] QList<GameHistoryPosition> history() { return backend->history; }
   void closeEngines() { backend->closeEngines(); }
   [[nodiscard]] QString formattedTime(int ms) const;
+  void flipBoard();
 
 private:
   BoardWidgetBackend *backend;
 
-  [[nodiscard]] QString fillPGNTag(const QSettings &settings, const QString &key) const;
+  [[nodiscard]] static QString fillPGNTag(const QSettings &settings, const QString &key) ;
 
 signals:
   void moveMade(const QString &move);

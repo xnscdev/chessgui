@@ -10,6 +10,7 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
   connect(ui->boardWidget, &BoardWidget::whiteTimerTicked, this, &ChessGUI::updateWhiteTimer);
   connect(ui->boardWidget, &BoardWidget::blackTimerTicked, this, &ChessGUI::updateBlackTimer);
   connect(ui->boardWidget, &BoardWidget::evalBarUpdate, this, &ChessGUI::updateEvalBar);
+  connect(ui->flipButton, &QPushButton::clicked, this, &ChessGUI::flipBoard);
   connect(ui->firstMoveButton, &QPushButton::clicked, this, &ChessGUI::toFirstMove);
   connect(ui->prevMoveButton, &QPushButton::clicked, this, &ChessGUI::toPrevMove);
   connect(ui->nextMoveButton, &QPushButton::clicked, this, &ChessGUI::toNextMove);
@@ -86,6 +87,13 @@ void ChessGUI::moveListSelected() {
     return;
   QTableWidgetSelectionRange selection = ui->movesList->selectedRanges()[0];
   ui->boardWidget->toMove(selection.topRow() * 2 + selection.leftColumn());
+}
+
+void ChessGUI::flipBoard() {
+  ui->boardWidget->flipBoard();
+  ui->boardWidget->update();
+  if (ui->boardWidget->gameRunning())
+    updatePlayerNames();
 }
 
 void ChessGUI::toFirstMove() {

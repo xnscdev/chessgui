@@ -160,6 +160,13 @@
       <item>
        <layout class="QHBoxLayout" name="moveControlPanel">
         <item>
+         <widget class="QPushButton" name="flipButton">
+          <property name="text">
+           <string>Flip</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="firstMoveButton">
           <property name="text">
            <string>&lt;&lt;</string>
