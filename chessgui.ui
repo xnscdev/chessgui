@@ -20,7 +20,7 @@
    <string>Chess GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,1,5">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="20,3,8">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,20,1">
       <item>
