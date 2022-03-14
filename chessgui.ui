@@ -123,6 +123,15 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="styleSheet">
+         <string notr="true">QProgressBar {
+background: black;
+}
+
+QProgressBar::chunk {
+background: white;
+}</string>
+        </property>
         <property name="minimum">
          <number>-1000</number>
         </property>
@@ -134,6 +143,9 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+        <property name="textVisible">
+         <bool>false</bool>
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -206,7 +218,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGame">
