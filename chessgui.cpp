@@ -79,7 +79,7 @@ void ChessGUI::openSettings() {
 void ChessGUI::updateSelectedAfterMove() {
   int move = ui->boardWidget->historyMove();
   if (move == ui->boardWidget->history().size() - 1)
-    ui->movesList->updateSelected(move + 1);
+    ui->movesList->updateSelected(move);
 }
 
 void ChessGUI::moveListSelected() {

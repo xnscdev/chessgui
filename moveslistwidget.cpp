@@ -24,7 +24,6 @@ void MovesListWidget::clearMoves() {
 }
 
 void MovesListWidget::updateSelected(int move) {
-  move--;
   QModelIndex index = model()->index(move / 2, move % 2);
   clearSelection();
   selectionModel()->select(index, QItemSelectionModel::Select);

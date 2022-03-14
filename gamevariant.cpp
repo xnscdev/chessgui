@@ -60,50 +60,51 @@ QString DefaultGameVariant::moveName(GamePosition &position, const Move &move, Q
   QString str;
   if (move.castle.x() != -1) {
     if (move.castle.x() < move.from.x())
-      return "O-O-O";
+      str = "O-O-O";
     else
-      return "O-O";
+      str = "O-O";
   }
-
-  if (piece != pawnPiece) {
-    str += notation[piece->name].toUpper();
-    for (int y = 0; y < size.height(); y++) {
-      bool found = false;
-      for (int x = 0; x < size.width(); x++) {
-        if (QPoint(x, y) != move.from && position[y][x].piece == piece && position[y][x].white == white) {
-          QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
-          QMutableHashIterator<QPoint, Move> it(moves);
-          while (it.hasNext()) {
-            it.next();
-            if (it.value().to == move.to && legalPosition(positionAfterMove(position, it.value()), white)) {
-              if (x != move.from.x())
-                str += static_cast<QChar>('a' + move.from.x());
-              else
-                str += QString::number(move.from.y() + 1);
-              found = true;
-              break;
+  else {
+    if (piece != pawnPiece) {
+      str += notation[piece->name].toUpper();
+      for (int y = 0; y < size.height(); y++) {
+        bool found = false;
+        for (int x = 0; x < size.width(); x++) {
+          if (QPoint(x, y) != move.from && position[y][x].piece == piece && position[y][x].white == white) {
+            QHash<QPoint, Move> moves = availableMoves(position, ep, {x, y});
+            QMutableHashIterator<QPoint, Move> it(moves);
+            while (it.hasNext()) {
+              it.next();
+              if (it.value().to == move.to && legalPosition(positionAfterMove(position, it.value()), white)) {
+                if (x != move.from.x())
+                  str += static_cast<QChar>('a' + move.from.x());
+                else
+                  str += QString::number(move.from.y() + 1);
+                found = true;
+                break;
+              }
             }
           }
+          if (found)
+            break;
         }
         if (found)
           break;
       }
-      if (found)
-        break;
     }
-  }
 
-  if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1) {
-    if (piece == pawnPiece)
-      str += static_cast<QChar>('a' + move.from.x());
-    str += 'x';
-  }
-  str += static_cast<QChar>('a' + move.to.x());
-  str += QString::number(move.to.y() + 1);
+    if (position[move.to.y()][move.to.x()].piece || move.capture.x() != -1) {
+      if (piece == pawnPiece)
+        str += static_cast<QChar>('a' + move.from.x());
+      str += 'x';
+    }
+    str += static_cast<QChar>('a' + move.to.x());
+    str += QString::number(move.to.y() + 1);
 
-  if (promote) {
-    str += "=";
-    str += notation[promote->name].toUpper();
+    if (promote) {
+      str += "=";
+      str += notation[promote->name].toUpper();
+    }
   }
 
   if (!legalPosition(positionAfterMove(position, move), !white))
