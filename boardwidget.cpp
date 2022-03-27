@@ -486,6 +486,10 @@ void BoardWidgetBackend::endGame(const QString &score, const QString &msg) {
     delete blackTimer;
     blackTimer = nullptr;
   }
+  delete whiteInputMethod;
+  delete blackInputMethod;
+  whiteInputMethod = nullptr;
+  blackInputMethod = nullptr;
   emit evalBarUpdate(gameEndScores[score], score);
   box.exec();
 }
