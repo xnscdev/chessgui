@@ -34,6 +34,8 @@ void BoardWidgetBackend::reset() {
     delete blackTimer;
     blackTimer = nullptr;
   }
+  evalScore = 0;
+  evalLabel = "0.00";
 
   position.clear();
   position.resize(game.size.height());
@@ -41,7 +43,7 @@ void BoardWidgetBackend::reset() {
     row.resize(game.size.width());
   }
   game.setup(position);
-  history.append({position, {{-1, 0}, {-1, 0}}});
+  history.append({position, {{-1, 0}, {-1, 0}}, 0, "0.00"});
   update();
 }
 
@@ -91,17 +93,20 @@ void BoardWidgetBackend::toPrevMove() {
     historyMove--;
   else if (historyMove == -1)
     historyMove = static_cast<int>(history.size()) - 2;
+  updateEvalBar();
   update();
 }
 
 void BoardWidgetBackend::toNextMove() {
   if (historyMove != -1 && ++historyMove == history.size() - 1)
     historyMove = -1;
+  updateEvalBar();
   update();
 }
 
 void BoardWidgetBackend::toLastMove() {
   historyMove = -1;
+  updateEvalBar();
   update();
 }
 
@@ -110,6 +115,7 @@ void BoardWidgetBackend::toMove(int move) {
     historyMove = -1;
   else
     historyMove = move;
+  updateEvalBar();
   update();
 }
 
@@ -336,7 +342,7 @@ void BoardWidgetBackend::doMove(Move &move) {
   turn = !turn;
   availableTiles.clear();
   availableMovesMap.clear();
-  history.append({position, move});
+  history.append({position, move, evalScore, evalLabel});
   moveFromTile = move.from;
   moveToTile = move.to;
   update();
@@ -442,12 +448,15 @@ bool BoardWidgetBackend::findGameEnd(bool &checkmated, QString &result, QString 
   if (legalPosition(position, turn)) {
     result = "1/2-1/2";
     msg = "Draw by stalemate";
+    evalScore = 0;
   }
   else {
     result = turn ? "0-1" : "1-0";
     msg = turn ? "Black wins" : "White wins";
+    evalScore = turn ? -1000 : 1000;
     checkmated = true;
   }
+  evalLabel = result;
   return true;
 }
 
@@ -522,6 +531,13 @@ UCIEngine *BoardWidgetBackend::createEvalEngine() {
   return engine;
 }
 
+void BoardWidgetBackend::updateEvalBar() {
+  if (historyMove == -1)
+    emit evalBarUpdate(evalScore, evalLabel);
+  else
+    emit evalBarUpdate(history[historyMove + 1].evalScore, history[historyMove + 1].evalLabel);
+}
+
 void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
   QPoint from{moveString[0].toLatin1() - 'a', QString(moveString[1]).toInt() - 1};
   QPoint to{moveString[2].toLatin1() - 'a', QString(moveString[3]).toInt() - 1};
@@ -537,6 +553,13 @@ void BoardWidgetBackend::receiveEngineMove(const QString &moveString) {
       break;
     }
   }
+}
+
+void BoardWidgetBackend::receiveEvalBarUpdate(int cp, const QString &label) {
+  evalScore = cp;
+  evalLabel = label;
+  if (historyMove == -1)
+    emit evalBarUpdate(cp, label);
 }
 
 BoardWidget::BoardWidget(QWidget *parent)

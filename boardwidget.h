@@ -14,6 +14,8 @@
 struct GameHistoryPosition {
   GamePosition pos;
   Move prevMove;
+  int evalScore;
+  QString evalLabel;
 };
 
 class BoardWidgetBackend : public QWidget {
@@ -74,6 +76,8 @@ private:
   int whiteTime;
   int blackTime;
   int moveBonus;
+  int evalScore;
+  QString evalLabel;
 
   QPoint selectedTile(QPoint pos);
   void drawPosition(QPainter &painter, GamePosition &position);
@@ -88,6 +92,7 @@ private:
   [[nodiscard]] QString gameState() const;
   MoveInputMethod *createMoveInputMethod(const QString &key, bool white);
   UCIEngine *createEvalEngine();
+  void updateEvalBar();
 
 signals:
   void moveMade(const QString &move);
@@ -97,7 +102,7 @@ signals:
 
 private slots:
   void receiveEngineMove(const QString &moveString);
-  void receiveEvalBarUpdate(int cp, const QString &label) { emit evalBarUpdate(cp, label); }
+  void receiveEvalBarUpdate(int cp, const QString &label);
 };
 
 class BoardWidget : public AspectRatioWidget {
