@@ -3,6 +3,27 @@
 #include "ui_chessgui.h"
 #include <QFileDialog>
 
+QString ChessGUI::evalBarStyle = "QProgressBar {\n"
+                                 "background-color: black;\n"
+                                 "border-radius: 7px;\n"
+                                 "}\n"
+                                 "\n"
+                                 "QProgressBar::chunk {\n"
+                                 "background-color: white;\n"
+                                 "border-bottom-left-radius: 7px;\n"
+                                 "border-bottom-right-radius: 7px;\n"
+                                 "}";
+
+QString ChessGUI::evalBarFullStyle = "QProgressBar {\n"
+                                     "background-color: black;\n"
+                                     "border-radius: 7px;\n"
+                                     "}\n"
+                                     "\n"
+                                     "QProgressBar::chunk {\n"
+                                     "background-color: white;\n"
+                                     "border-radius: 7px;\n"
+                                     "}";
+
 ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) {
   ui->setupUi(this);
   connect(ui->boardWidget, &BoardWidget::moveMade, ui->movesList, &MovesListWidget::recordMove);
@@ -16,6 +37,7 @@ ChessGUI::ChessGUI(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChessGUI) 
   connect(ui->nextMoveButton, &QPushButton::clicked, this, &ChessGUI::toNextMove);
   connect(ui->lastMoveButton, &QPushButton::clicked, this, &ChessGUI::toLastMove);
   connect(ui->movesList, &QTableWidget::itemSelectionChanged, this, &ChessGUI::moveListSelected);
+  ui->evalBar->setStyleSheet(evalBarStyle);
 }
 
 ChessGUI::~ChessGUI() {
@@ -131,6 +153,10 @@ void ChessGUI::updateBlackTimer(const QString &time) {
 }
 
 void ChessGUI::updateEvalBar(int cp, const QString &label) {
+  if (cp >= 1000)
+    ui->evalBar->setStyleSheet(evalBarFullStyle);
+  else
+    ui->evalBar->setStyleSheet(evalBarStyle);
   ui->evalBar->setValue(cp);
   ui->evalBarLabel->setText(label);
 }

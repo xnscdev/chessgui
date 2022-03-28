@@ -22,6 +22,8 @@ public slots:
   void openSettings();
 
 private:
+  static QString evalBarStyle;
+  static QString evalBarFullStyle;
   Ui::ChessGUI *ui;
 
   void updatePlayerNames();

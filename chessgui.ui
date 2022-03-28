@@ -20,7 +20,7 @@
    <string>Chess GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="20,3,8">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="10,1,4">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,20,1">
       <item>
@@ -123,15 +123,6 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="styleSheet">
-         <string notr="true">QProgressBar {
-background: black;
-}
-
-QProgressBar::chunk {
-background: white;
-}</string>
-        </property>
         <property name="minimum">
          <number>-1000</number>
         </property>
@@ -218,7 +209,7 @@ background: white;
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGame">

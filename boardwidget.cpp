@@ -420,6 +420,8 @@ bool BoardWidgetBackend::findGameEnd(bool &checkmated, QString &result, QString 
   if (findDrawIM(ima, imb)) {
     result = "1/2-1/2";
     msg = "Draw by insufficient material";
+    evalScore = 0;
+    evalLabel = result;
     return true;
   }
 
@@ -439,6 +441,8 @@ bool BoardWidgetBackend::findGameEnd(bool &checkmated, QString &result, QString 
               msg = "Draw by 50-move rule";
             else
               return false;
+            evalScore = 0;
+            evalLabel = result;
             return true;
           }
         }
