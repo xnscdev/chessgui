@@ -19,8 +19,10 @@ SettingsDialog::SettingsDialog(QWidget *parent) : QDialog(parent), ui(new Ui::Se
   connect(ui->helpButton, &QPushButton::clicked, this, &SettingsDialog::showHelp);
   connect(ui->addEngineButton, &QPushButton::clicked, this, &SettingsDialog::addEngine);
   connect(ui->removeEngineButton, &QPushButton::clicked, this, &SettingsDialog::removeEngine);
-  connect(ui->timeControlBox, &QCheckBox::clicked, ui->baseTimeBox, &QLineEdit::setEnabled);
-  connect(ui->timeControlBox, &QCheckBox::clicked, ui->moveBonusBox, &QLineEdit::setEnabled);
+  connect(ui->timeControlBox, &QCheckBox::clicked, ui->whiteBaseTimeBox, &QLineEdit::setEnabled);
+  connect(ui->timeControlBox, &QCheckBox::clicked, ui->whiteMoveBonusBox, &QLineEdit::setEnabled);
+  connect(ui->timeControlBox, &QCheckBox::clicked, ui->blackBaseTimeBox, &QLineEdit::setEnabled);
+  connect(ui->timeControlBox, &QCheckBox::clicked, ui->blackMoveBonusBox, &QLineEdit::setEnabled);
 
   loadSettings();
 }
@@ -47,8 +49,10 @@ void SettingsDialog::saveSettings() {
   settings.setValue("date", ui->gameDate->date());
   settings.setValue("round", ui->roundBox->text());
   settings.setValue("timeControl", ui->timeControlBox->isChecked());
-  settings.setValue("baseTime", ui->baseTimeBox->value());
-  settings.setValue("moveBonus", ui->moveBonusBox->value());
+  settings.setValue("whiteBaseTime", ui->whiteBaseTimeBox->value());
+  settings.setValue("whiteMoveBonus", ui->whiteMoveBonusBox->value());
+  settings.setValue("blackBaseTime", ui->blackBaseTimeBox->value());
+  settings.setValue("blackMoveBonus", ui->blackMoveBonusBox->value());
   settings.setValue("evalEngine", ui->evalEngineBox->currentIndex());
   settings.setValue("engineDepth", ui->engineDepthBox->value());
 
@@ -76,14 +80,18 @@ void SettingsDialog::loadSettings() {
   ui->gameDate->setDate(settings.value("date", QDate::currentDate()).toDate());
   ui->roundBox->setText(settings.value("round").toString());
   ui->timeControlBox->setChecked(settings.value("timeControl").toBool());
-  ui->baseTimeBox->setValue(settings.value("baseTime", 5).toInt());
-  ui->moveBonusBox->setValue(settings.value("moveBonus").toInt());
+  ui->whiteBaseTimeBox->setValue(settings.value("whiteBaseTime", 5).toInt());
+  ui->whiteMoveBonusBox->setValue(settings.value("whiteMoveBonus").toInt());
+  ui->blackBaseTimeBox->setValue(settings.value("blackBaseTime", 5).toInt());
+  ui->blackMoveBonusBox->setValue(settings.value("blackMoveBonus").toInt());
   ui->engineDepthBox->setValue(settings.value("engineDepth", 25).toInt());
 
   ui->whiteELO->setEnabled(ui->whiteELOEnabled->isChecked());
   ui->blackELO->setEnabled(ui->blackELOEnabled->isChecked());
-  ui->baseTimeBox->setEnabled(ui->timeControlBox->isChecked());
-  ui->moveBonusBox->setEnabled(ui->timeControlBox->isChecked());
+  ui->whiteBaseTimeBox->setEnabled(ui->timeControlBox->isChecked());
+  ui->whiteMoveBonusBox->setEnabled(ui->timeControlBox->isChecked());
+  ui->blackBaseTimeBox->setEnabled(ui->timeControlBox->isChecked());
+  ui->blackMoveBonusBox->setEnabled(ui->timeControlBox->isChecked());
 
   int size = settings.beginReadArray("engines");
   ui->enginesList->setRowCount(size);

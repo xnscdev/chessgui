@@ -59,9 +59,16 @@ void ChessGUI::updatePlayerNames() {
 void ChessGUI::updateTimers() {
   QSettings settings;
   if (settings.value("timeControl").toBool()) {
-    int ms = settings.value("baseTime").toInt() * 60000;
-    ui->playerTimeLabel->setText(ui->boardWidget->formattedTime(ms));
-    ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(ms));
+    int wms = settings.value("whiteBaseTime").toInt() * 60000;
+    int bms = settings.value("blackBaseTime").toInt() * 60000;
+    if (ui->boardWidget->reversed()) {
+      ui->playerTimeLabel->setText(ui->boardWidget->formattedTime(bms));
+      ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(wms));
+    }
+    else {
+      ui->playerTimeLabel->setText(ui->boardWidget->formattedTime(wms));
+      ui->opponentTimeLabel->setText(ui->boardWidget->formattedTime(bms));
+    }
   }
 }
 

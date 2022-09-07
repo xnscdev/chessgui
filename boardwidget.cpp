@@ -65,16 +65,17 @@ void BoardWidgetBackend::newGame() {
     blackTimer->setInterval(timerFreq);
     connect(whiteTimer, &QTimer::timeout, this, &BoardWidgetBackend::whiteTimerTick);
     connect(blackTimer, &QTimer::timeout, this, &BoardWidgetBackend::blackTimerTick);
-    whiteTime = settings.value("baseTime").toInt() * 60000;
-    blackTime = whiteTime;
-    moveBonus = settings.value("moveBonus").toInt() * 1000;
+    whiteTime = settings.value("whiteBaseTime").toInt() * 60000;
+    blackTime = settings.value("blackBaseTime").toInt() * 60000;
+    whiteMoveBonus = settings.value("whiteMoveBonus").toInt() * 1000;
+    blackMoveBonus = settings.value("blackMoveBonus").toInt() * 1000;
     emit whiteTimerTicked(whiteTime);
     emit blackTimerTicked(blackTime);
 
     whiteTimer->start();
     whiteInputMethod->reset(settings.value("whiteELOEnabled").toBool(), settings.value("whiteELO", 1800).toInt());
     blackInputMethod->reset(settings.value("blackELOEnabled").toBool(), settings.value("blackELO", 1800).toInt());
-    whiteInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
+    whiteInputMethod->start(uciMoveString, whiteTime, blackTime, whiteMoveBonus, blackMoveBonus);
   }
   else {
     emit whiteTimerTicked(-1);
@@ -361,13 +362,13 @@ void BoardWidgetBackend::doMove(Move &move) {
 
   if (whiteTimer || blackTimer) {
     if (turn) {
-      blackTime += moveBonus - blackTimer->interval() + blackTimer->remainingTime();
+      blackTime += blackMoveBonus - blackTimer->interval() + blackTimer->remainingTime();
       emit blackTimerTicked(blackTime);
       blackTimer->stop();
       whiteTimer->start();
     }
     else {
-      whiteTime += moveBonus - whiteTimer->interval() + whiteTimer->remainingTime();
+      whiteTime += whiteMoveBonus - whiteTimer->interval() + whiteTimer->remainingTime();
       emit whiteTimerTicked(whiteTime);
       whiteTimer->stop();
       blackTimer->start();
@@ -376,9 +377,9 @@ void BoardWidgetBackend::doMove(Move &move) {
   if (evalEngine)
     evalEngine->startEval(uciMoveString, turn);
   if (turn)
-    whiteInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
+    whiteInputMethod->start(uciMoveString, whiteTime, blackTime, whiteMoveBonus, blackMoveBonus);
   else
-    blackInputMethod->start(uciMoveString, whiteTime, blackTime, moveBonus);
+    blackInputMethod->start(uciMoveString, whiteTime, blackTime, whiteMoveBonus, blackMoveBonus);
 }
 
 bool BoardWidgetBackend::tryMove(QPoint to) {

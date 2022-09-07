@@ -181,10 +181,61 @@
             <string>Time Control</string>
            </property>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="baseTimeBox">
+            <item row="4" column="1">
+             <widget class="QSpinBox" name="whiteMoveBonusBox">
               <property name="enabled">
                <bool>false</bool>
+              </property>
+              <property name="suffix">
+               <string> seconds</string>
+              </property>
+              <property name="maximum">
+               <number>60</number>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Black&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Base time:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Move bonus:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_17">
+              <property name="text">
+               <string>Base time:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;White&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="whiteBaseTimeBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="suffix">
+               <string> minutes</string>
               </property>
               <property name="minimum">
                <number>1</number>
@@ -197,48 +248,40 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QSpinBox" name="moveBonusBox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="maximum">
-               <number>60</number>
+            <item row="0" column="0" colspan="3">
+             <widget class="QCheckBox" name="timeControlBox">
+              <property name="text">
+               <string>Enable time control</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_12">
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_18">
               <property name="text">
                <string>Move bonus:</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>Base time:</string>
+            <item row="6" column="1">
+             <widget class="QSpinBox" name="blackBaseTimeBox">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="suffix">
+               <string> minutes</string>
+              </property>
+              <property name="value">
+               <number>5</number>
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>minutes</string>
+            <item row="7" column="1">
+             <widget class="QSpinBox" name="blackMoveBonusBox">
+              <property name="enabled">
+               <bool>false</bool>
               </property>
-             </widget>
-            </item>
-            <item row="3" column="2">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>seconds</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="3">
-             <widget class="QCheckBox" name="timeControlBox">
-              <property name="text">
-               <string>Enable time control</string>
+              <property name="suffix">
+               <string> seconds</string>
               </property>
              </widget>
             </item>

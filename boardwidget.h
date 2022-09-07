@@ -75,7 +75,8 @@ private:
   QTimer *blackTimer = nullptr;
   int whiteTime;
   int blackTime;
-  int moveBonus;
+  int whiteMoveBonus;
+  int blackMoveBonus;
   int evalScore;
   QString evalLabel;
 
